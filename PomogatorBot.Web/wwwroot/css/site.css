@@ -113,18 +113,18 @@ h1 {
     bottom: 20px;
     display: none;
     padding: 1rem 2rem;
+    transition: all 0.3s ease;
+    transform: translateX(120%);
     animation: slideIn 0.3s ease;
+    opacity: 0;
     color: white;
     border-radius: 8px;
-    background: #00bcd4;
-    transition: all 0.3s ease;
-    opacity: 0;
-    transform: translateX(120%);
+    background: rgba(0, 188, 212, 0.3);
 }
 
 .notification.visible {
-    opacity: 1;
     transform: translateX(0);
+    opacity: 1;
 }
 
 @keyframes slideIn {
@@ -475,23 +475,23 @@ h1 {
 .stats-header {
     font-weight: 500;
     margin-bottom: 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .stats-row {
+    font-size: 0.95rem;
     display: flex;
     justify-content: space-between;
     margin: 6px 0;
-    font-size: 0.95rem;
 }
 
 .message-stats {
-    display: flex;
-    gap: 12px;
-    margin-top: 8px;
     font-size: 0.85rem;
+    display: flex;
+    margin-top: 8px;
     opacity: 0.8;
+    gap: 12px;
 }
 
 .stat-success {

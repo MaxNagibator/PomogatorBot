@@ -30,4 +30,19 @@ function renderSubscriptions() {
         `;
         container.insertAdjacentHTML('beforeend', labelElement);
     });
+
+    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+    const savedSubs = JSON.parse(localStorage.getItem('selectedSubscriptions')) || [];
+
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = savedSubs.includes(checkbox.value);
+        checkbox.addEventListener('change', handleCheckboxChange);
+    });
+}
+
+function handleCheckboxChange() {
+    const selectedSubs = Array.from(
+        document.querySelectorAll('#subscription-container input[type="checkbox"]:checked')
+    ).map(checkbox => checkbox.value);
+    localStorage.setItem('selectedSubscriptions', JSON.stringify(selectedSubs));
 }

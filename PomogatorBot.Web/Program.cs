@@ -9,16 +9,22 @@ using Serilog;
 using Serilog.Events;
 using Telegram.Bot;
 
+var logPath = Path.Combine(Directory.GetCurrentDirectory(), "logs", "verbose.log");
+
 Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
     .MinimumLevel.Override("Microsoft.AspNetCore.Hosting", LogEventLevel.Warning)
     .MinimumLevel.Override("Microsoft.AspNetCore.Mvc", LogEventLevel.Warning)
     .MinimumLevel.Override("Microsoft.AspNetCore.Routing", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File(logPath,
+        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}]({SourceContext}) {Message:lj}{NewLine}{Exception}",
+        rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 try
 {
-    Log.Information("Starting web application");
+    Log.Information("Запуск веб-приложения");
 
     var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddSerilog();
@@ -74,7 +80,7 @@ try
 }
 catch (Exception exception)
 {
-    Log.Fatal(exception, "Application terminated unexpectedly");
+    Log.Fatal(exception, "Непредвиденная остановка приложения");
 }
 finally
 {

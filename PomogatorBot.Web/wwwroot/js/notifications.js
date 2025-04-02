@@ -16,7 +16,11 @@ function processNotificationQueue() {
     const data = notificationQueue.shift();
     const notification = document.getElementById('notification');
 
-    const successPercent = ((data.successfulSends / data.totalUsers) * 100 || 0).toFixed(1);
+    const successPercent = data.failedSends === 0 && data.totalUsers > 0
+        ? '100.0'
+        : (data.totalUsers > 0
+            ? ((data.successfulSends / data.failedSends) * 100).toFixed(1)
+            : '0.0');
 
     notification.innerHTML = `
         <div class="stats-header">✅ Успешно отправлено!</div>
@@ -26,7 +30,7 @@ function processNotificationQueue() {
         </div>
         <div class="stats-row">
             <span>Успешно:</span>
-            <strong>${data.successfulSends.toLocaleString()} ${successPercent}%</strong>
+            <strong>${data.successfulSends.toLocaleString()} (${successPercent}%)</strong>
         </div>
         <div class="stats-row">
             <span>Не удалось:</span>
