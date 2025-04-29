@@ -78,6 +78,7 @@ public class UserService(
             {
                 await botClient.SendMessage(user.UserId,
                     messageText,
+                    Telegram.Bot.Types.Enums.ParseMode.None,
                     cancellationToken: cancellationToken);
 
                 successfulSends++;

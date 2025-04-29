@@ -1,16 +1,16 @@
-name: Deploy .NET 9.0 to Local IIS
+name: Update BobGroupWindowsServer
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "master" ]
   workflow_dispatch:
 
 env:
   DOTNET_VERSION: '9.0.x'
   PUBLISH_FOLDER: 'publish'
-  PROJECT_FILE: 'PomogatorBot.Web.csproj'
+  PROJECT_FILE: 'PomogatorBot.Web\PomogatorBot.Web.csproj'
   WEBSITE_NAME: '!bob217pomogator'
-  WEBSITE_PATH: 'E:\publish\bob217pomogator\production\web_test'
+  WEBSITE_PATH: 'E:\publish\bob217pomogator\production\web'
 
 jobs:
   build-and-deploy:
@@ -29,20 +29,21 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore ${{ env.PROJECT_FILE }}
 
-    - name: Build
-      run: dotnet build ${{ env.PROJECT_FILE }} --configuration Debug --no-restore
-
     - name: Publish
-      run: dotnet publish ${{ env.PROJECT_FILE }} -c Debug -o ${{ env.PUBLISH_FOLDER }} --no-build
+      run: dotnet publish ${{ env.PROJECT_FILE }} -c Debug -o ${{ env.PUBLISH_FOLDER }}
 
     - name: Stop IIS Website
-      run: Stop-WebSite -Name "${{ env.WEBSITE_NAME }}"
+      run: |
+        Import-Module WebAdministration
+        Stop-WebAppPool -Name "${{ env.WEBSITE_NAME }}"
       shell: pwsh
 
     - name: Copy new files
-      run: Copy-Item -Path "${{ env.PUBLISH_FOLDER }}\*" -Destination "${{ env.WEBSITE_PATH }}" -Recurse -Force
+      run: Copy-Item -Path "${{ env.PUBLISH_FOLDER }}\*" -Destination "${{ env.WEBSITE_PATH }}" -Recurse -Force -Exclude "web.config", "appsettings.json"
       shell: pwsh
 
     - name: Start IIS Website
-      run: Start-WebSite -Name "${{ env.WEBSITE_NAME }}"
+      run: |
+        Import-Module WebAdministration
+        Stop-WebAppPool -Name "${{ env.WEBSITE_NAME }}"
       shell: pwsh
