@@ -19,35 +19,15 @@
                     onclick="sendMessage()">
                 Возвестить пастве
             </button>
-            <div class="edit-buttons">
-                <button class="edit-button save-edit-btn"
-                        onclick="saveEdit()">
-                    💾 Сохранить
-                </button>
-                <button class="edit-button cancel-edit-btn"
-                        onclick="cancelEdit()">
-                    ❌ Отменить
-                </button>
-            </div>
         </div>
     </div>
+
     <div class="subscription-selector">
         <div class="subscription-title">Выбрать подписки:</div>
         <div class="subscription-grid"
              id="subscription-container">
         </div>
     </div>
-
-    <div class="separator"></div>
-
-    <div class="container favorites-container">
-        <div class="history-header">
-            <div class="favorites-title">Избранные послания</div>
-        </div>
-        <div id="favorites-list"></div>
-    </div>
-
-    <div class="separator"></div>
 
     <div class="container history-container">
         <div class="history-header">
@@ -64,7 +44,6 @@
          id="notification"></div>
 
     <script src="js/notifications.js"></script>
-    <script src="js/favorites.js"></script>
     <script src="js/subscriptions.js"></script>
     <script src="js/site.js"></script>
 </body>

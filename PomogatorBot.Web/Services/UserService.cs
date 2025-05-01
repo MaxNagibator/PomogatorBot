@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using PomogatorBot.Web.Infrastructure;
-using PomogatorBot.Web.Infrastructure.Entities;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
+using Telegram.Bot.Types;
+using User = PomogatorBot.Web.Infrastructure.Entities.User;
 
 namespace PomogatorBot.Web.Services;
 
@@ -20,6 +21,11 @@ public class UserService(
     ITelegramBotClient botClient,
     ILogger<UserService> logger) : IUserService
 {
+    private static readonly LinkPreviewOptions LinkPreviewOptions = new()
+    {
+        IsDisabled = true,
+    };
+
     public ValueTask<User?> GetAsync(long id, CancellationToken cancellationToken = default)
     {
         return context.Users.FindAsync([id], cancellationToken);
@@ -78,7 +84,7 @@ public class UserService(
             {
                 await botClient.SendMessage(user.UserId,
                     messageText,
-                    Telegram.Bot.Types.Enums.ParseMode.None,
+                    linkPreviewOptions: LinkPreviewOptions,
                     cancellationToken: cancellationToken);
 
                 successfulSends++;

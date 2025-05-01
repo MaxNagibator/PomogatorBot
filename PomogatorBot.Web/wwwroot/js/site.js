@@ -1,10 +1,6 @@
 ﻿let messageHistory = JSON.parse(localStorage.getItem('messageHistory')) || [];
-let editingIndex = -1;
 
-messageHistory = messageHistory.map(msg => ({
-    ...msg,
-    favorite: msg.favorite || false
-}));
+messageHistory = messageHistory.map(msg => ({ ...msg }));
 
 async function sendMessage() {
     const button = document.querySelector('.send-button');
@@ -12,10 +8,6 @@ async function sendMessage() {
 
     const subscribes = Array.from(document.querySelectorAll('input[name="subscribes"]:checked'))
         .reduce((acc, checkbox) => acc | parseInt(checkbox.value), 0);
-
-    if (editingIndex !== -1) {
-        saveEdit(false);
-    }
 
     textarea.classList.remove('error');
 
@@ -61,6 +53,8 @@ async function sendMessage() {
             throw new Error(result.message || 'Ошибка отправки');
         }
     } catch (error) {
+        console.error('Error:', error);
+
         const errorMessage = {
             text: textarea.value,
             date: new Date().toLocaleString(),
@@ -69,14 +63,12 @@ async function sendMessage() {
         };
 
         addToHistory(errorMessage);
-        console.error('Error:', error);
         showNotification('❌ Ошибка отправки', '#ff6699');
     } finally {
         button.classList.remove('loading');
         button.innerHTML = 'Возвестить пастве';
     }
 }
-
 
 document.querySelector('.message-field').addEventListener('input', function () {
     this.classList.remove('error');
@@ -96,50 +88,24 @@ function addToHistory(message) {
 
 function updateHistory() {
     const historyList = document.getElementById('history-list');
-    const favoritesList = document.getElementById('favorites-list');
     historyList.innerHTML = '';
-    favoritesList.innerHTML = '';
 
-    const favorites = messageHistory.map((msg, index) => ({ msg, index })).filter(msg => msg.msg.favorite);
-    const regular = messageHistory.map((msg, index) => ({ msg, index })).filter(msg => !msg.msg.favorite);
-
-    if (favorites.length > 0) {
-        favorites.forEach(msg => {
-            const item = createMessageElement(msg.msg, msg.index, true);
-            favoritesList.appendChild(item);
-        });
-    } else {
-        favoritesList.innerHTML = '<div class="empty-history">Нет избранных сообщений</div>';
-
-    }
+    const regular = messageHistory.map((msg, index) => ({ msg, index }));
 
     if (regular.length > 0) {
         regular.forEach(msg => {
-            const item = createMessageElement(msg.msg, msg.index, false);
+            const item = createMessageElement(msg.msg, msg.index);
             historyList.appendChild(item);
         });
     } else {
         historyList.innerHTML = '<div class="empty-history">Нет обычных сообщений</div>';
     }
-
-
-    initDragAndDrop();
 }
 
-function createMessageElement(msg, index, isFavorite) {
+function createMessageElement(msg, index) {
     const item = document.createElement('div');
-    item.className = `message-item ${msg.status === 'success' ? 'message-success' : 'message-error'}
-                         ${isFavorite ? 'draggable message-favorite' : ''}`;
+    item.className = `message-item ${msg.status === 'success' ? 'message-success' : 'message-error'}`;
     item.dataset.index = index;
-    item.draggable = isFavorite;
-
-    item.addEventListener('contextmenu', e => {
-        if (isFavorite) {
-            e.preventDefault();
-            startEditMessage(index, msg.text);
-            return false;
-        }
-    });
 
     const safeDate = escapeHtml(msg.date);
     const safeText = escapeHtml(msg.text);
@@ -158,10 +124,6 @@ function createMessageElement(msg, index, isFavorite) {
             ${statsHTML}
             <div class="message-actions">
                 <div class="copy-notice">Скопировано!</div>
-                <button class="action-btn favorite-btn ${msg.favorite ? 'active' : ''}"
-                        data-index="${index}">
-                    ${msg.favorite ? '⭐' : '✩'}
-                </button>
                 <div class="delete-btn">
                     <button class="action-btn delete-action" data-index="${index}">🗑️</button>
                 </div>
@@ -171,12 +133,6 @@ function createMessageElement(msg, index, isFavorite) {
                 </div>
             </div>
         `;
-
-    const favoriteBtn = item.querySelector('.favorite-btn');
-    favoriteBtn.addEventListener('click', e => {
-        e.stopPropagation();
-        toggleFavorite(index);
-    });
 
     const deleteBtn = item.querySelector('.delete-action');
     const confirmBtn = item.querySelector('.confirm-delete-btn');
@@ -199,50 +155,6 @@ function createMessageElement(msg, index, isFavorite) {
     return item;
 }
 
-function startEditMessage(index, text) {
-    if (editingIndex === index) {
-        cancelEdit();
-        return;
-    }
-
-    editingIndex = index;
-    document.querySelector('.message-field').value = text;
-    document.querySelector('.button-group').classList.add('editing-mode');
-
-    document.querySelectorAll('.message-item').forEach(item => item.classList.remove('editing'));
-    document.querySelector(`.message-item[data-index="${index}"]`).classList.add('editing');
-}
-
-function cancelEdit() {
-    editingIndex = -1;
-    document.querySelector('.message-field').value = '';
-    document.querySelector('.button-group').classList.remove('editing-mode');
-    document.querySelectorAll('.message-item').forEach(item => item.classList.remove('editing'));
-}
-
-function saveEdit(isClear = true) {
-    if (editingIndex === -1) return;
-
-    const newText = document.querySelector('.message-field').value.trim();
-    if (!newText) {
-        showNotification('❌ Текст не может быть пустым', '#ff6699');
-        return;
-    }
-
-    messageHistory[editingIndex].text = newText;
-    localStorage.setItem('messageHistory', JSON.stringify(messageHistory));
-
-    document.querySelector(`.message-item[data-index="${editingIndex}"]`).classList.remove('editing');
-    updateHistory();
-    showNotification('✅ Изменения сохранены', '#ffcc00');
-    editingIndex = -1;
-    document.querySelector('.button-group').classList.remove('editing-mode');
-    if (isClear) {
-        document.querySelector('.message-field').value = '';
-    }
-}
-
-
 function deleteMessage(index) {
     messageHistory.splice(index, 1);
     localStorage.setItem('messageHistory', JSON.stringify(messageHistory));
@@ -250,10 +162,9 @@ function deleteMessage(index) {
     showNotification('🗑️ Сообщение удалено', '#666');
 }
 
-
 function clearHistory() {
-    if (confirm('Очистить всю историю, кроме избранных сообщений?')) {
-        messageHistory = messageHistory.filter(msg => msg.favorite);
+    if (confirm('Очистить всю историю?')) {
+        messageHistory.clear();
         localStorage.setItem('messageHistory', JSON.stringify(messageHistory));
         updateHistory();
         showNotification('История очищена, избранные сохранены', '#00bcd4');
