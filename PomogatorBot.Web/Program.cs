@@ -28,6 +28,7 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddSerilog();
+    builder.Services.AddHealthChecks();
 
     builder.Services.AddPooledDbContextFactory<ApplicationDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -70,6 +71,8 @@ try
     app.UseStaticFiles();
     app.UseFastEndpoints();
 
+    app.MapHealthChecks("/live");
+
     app.MapGet("/", async context =>
     {
         context.Response.ContentType = "text/html";
@@ -79,6 +82,7 @@ try
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
+
         try
         {
             var dbContext = services.GetRequiredService<ApplicationDbContext>();
@@ -88,10 +92,9 @@ try
         }
         catch (Exception ex)
         {
-            throw new Exception("migration fail", ex);
+            throw new("migration fail", ex);
         }
     }
-
 
     app.Run();
 }

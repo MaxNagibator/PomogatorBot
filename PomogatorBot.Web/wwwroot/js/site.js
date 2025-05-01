@@ -164,8 +164,8 @@ function deleteMessage(index) {
 
 function clearHistory() {
     if (confirm('Очистить всю историю?')) {
-        messageHistory.clear();
-        localStorage.setItem('messageHistory', JSON.stringify(messageHistory));
+        messageHistory = [];
+        localStorage.removeItem('messageHistory');
         updateHistory();
         showNotification('История очищена, избранные сохранены', '#00bcd4');
     }

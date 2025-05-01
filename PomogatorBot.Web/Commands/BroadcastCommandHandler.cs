@@ -24,22 +24,86 @@ public class BroadcastCommandHandler(IConfiguration configuration, IUserService 
 
         if (message.Text?.Length <= length)
         {
-            return new("Пожалуйста, укажите сообщение для рассылки.", new());
+            return new(GetHelpMessage(), new());
         }
 
-        var broadcastMessage = message.Text?[length..]?.Trim();
+        var messageText = message.Text?[length..]?.Trim();
 
-        if (string.IsNullOrEmpty(broadcastMessage))
+        if (string.IsNullOrEmpty(messageText))
         {
-            return new("Пожалуйста, укажите сообщение для рассылки.", new());
+            return new(GetHelpMessage(), new());
         }
 
-        var response = await userService.NotifyAsync(broadcastMessage, Subscribes.None, cancellationToken);
+        var subscribes = Subscribes.None;
+        var broadcastMessage = messageText;
+        var closingBracketIndex = messageText.IndexOf(']');
 
-        return new($"Рассылка завершена. "
-                   + $"Успешно отправлено {response.SuccessfulSends} пользователям. "
-                   + $"Ошибки при отправке {response.FailedSends} пользователям. "
-                   + $"Всего пользователей: {response.TotalUsers}", new());
+        if (messageText.StartsWith('[') && closingBracketIndex != -1)
+        {
+            var subscriptionParam = messageText.Substring(1, closingBracketIndex - 1).Trim();
+            broadcastMessage = messageText[(closingBracketIndex + 1)..].Trim();
+
+            if (string.IsNullOrEmpty(broadcastMessage))
+            {
+                return new("Пожалуйста, укажите сообщение для рассылки после параметров подписок.", new());
+            }
+
+            subscribes = ParseSubscriptions(subscriptionParam);
+        }
+
+        var response = await userService.NotifyAsync(broadcastMessage, subscribes, cancellationToken);
+
+        return new($"""
+                    Рассылка завершена. 
+                    Успешно - {response.SuccessfulSends}
+                    С ошибкой - {response.FailedSends}
+                    Всего - {response.TotalUsers}
+                    """, new());
+    }
+
+    private static string GetHelpMessage()
+    {
+        var subscribes = SubscriptionExtensions.GetSubscriptionMetadata()
+            .Values
+            .Where(x => x.Subscription != Subscribes.All)
+            .Select(x => $"▫️ {x.Subscription}");
+
+        var message = $"""
+                       📢 Справка по команде рассылки:
+
+                       Использование:
+                       /b [подписки_через_запятую] сообщение
+
+                       Доступные подписки:
+                       {string.Join(Environment.NewLine, subscribes)}
+
+                       ❗При {Subscribes.None} отправится всем пользователям
+                       ❗При отсутствии подписок отправится всем пользователям
+                       """;
+
+        return message;
+    }
+
+    private static Subscribes ParseSubscriptions(string subscriptionParam)
+    {
+        var result = Subscribes.None;
+
+        if (string.IsNullOrWhiteSpace(subscriptionParam))
+        {
+            return result;
+        }
+
+        var parts = subscriptionParam.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        foreach (var part in parts)
+        {
+            if (Enum.TryParse<Subscribes>(part, true, out var subscription))
+            {
+                result |= subscription;
+            }
+        }
+
+        return result;
     }
 
     private bool IsAdminMessage(Message message)
