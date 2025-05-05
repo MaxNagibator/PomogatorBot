@@ -35,15 +35,27 @@ jobs:
     - name: Stop IIS Website
       run: |
         Import-Module WebAdministration
-        Stop-WebAppPool -Name "${{ env.WEBSITE_NAME }}"
+        $appPool = Get-WebAppPoolState -Name "${{ env.WEBSITE_NAME }}"
+        if ($appPool.Value -ne "Stopped") {
+            Stop-WebAppPool -Name "${{ env.WEBSITE_NAME }}"
+            Write-Host "AppPool stopped successfully"
+        } else {
+            Write-Host "AppPool already stopped, skipping..."
+        }
       shell: pwsh
 
     - name: Copy new files
-      run: Copy-Item -Path "${{ env.PUBLISH_FOLDER }}\*" -Destination "${{ env.WEBSITE_PATH }}" -Recurse -Force -Exclude "web.config", "appsettings.json"
-      shell: pwsh
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 5
+        max_attempts: 3
+        command: |
+          Write-Host "Copying files from ${{ env.PUBLISH_FOLDER }} to ${{ env.WEBSITE_PATH }}"
+          Copy-Item -Path "${{ env.PUBLISH_FOLDER }}\*" -Destination "${{ env.WEBSITE_PATH }}" -Recurse -Force -Exclude "web.config", "appsettings.json"
+        shell: pwsh
 
     - name: Start IIS Website
       run: |
         Import-Module WebAdministration
-        Stop-WebAppPool -Name "${{ env.WEBSITE_NAME }}"
+        Start-WebAppPool -Name "${{ env.WEBSITE_NAME }}"
       shell: pwsh
