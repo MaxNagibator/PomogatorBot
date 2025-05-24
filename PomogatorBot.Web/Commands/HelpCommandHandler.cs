@@ -3,11 +3,11 @@ using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Commands;
 
-public class HelpCommandHandler : IBotCommandHandler, ICommandMetadata
+public class HelpCommandHandler : BotAdminCommandHandler, ICommandMetadata
 {
     private readonly IEnumerable<CommandMetadata> _commands;
 
-    public HelpCommandHandler(IEnumerable<CommandMetadata> commands)
+    public HelpCommandHandler(IConfiguration configuration, IEnumerable<CommandMetadata> commands) : base(configuration)
     {
         _commands = commands
             .Where(x => string.IsNullOrEmpty(x.Description) == false)
@@ -16,11 +16,23 @@ public class HelpCommandHandler : IBotCommandHandler, ICommandMetadata
 
     public static CommandMetadata Metadata { get; } = new("help", "Показать справку");
 
-    public string Command => Metadata.Command;
+    public override string Command => Metadata.Command;
 
-    public Task<BotResponse> HandleAsync(Message message, CancellationToken cancellationToken)
+    public override Task<BotResponse> HandleAsync(Message message, CancellationToken cancellationToken)
     {
-        var helpText = string.Join("\n", _commands.Select(c => $"/{c.Command} - {c.Description}"));
+        var userIsAdmin = IsAdminMessage(message);
+
+        var availableCommands = _commands
+            .Where(x => x.RequiresAdmin == false || userIsAdmin)
+            .Select(x => $"/{x.Command} - {x.Description}");
+
+        var helpText = string.Join("\n", availableCommands);
+
+        if (string.IsNullOrEmpty(helpText))
+        {
+            helpText = "Нет доступных команд.";
+        }
+
         return Task.FromResult(new BotResponse(helpText));
     }
 }

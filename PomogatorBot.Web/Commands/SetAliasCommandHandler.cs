@@ -7,16 +7,14 @@ namespace PomogatorBot.Web.Commands;
 public class SetAliasCommandHandler(
     IConfiguration configuration,
     IUserService userService,
-    ILogger<SetAliasCommandHandler> logger) : IBotCommandHandler, ICommandMetadata
+    ILogger<SetAliasCommandHandler> logger)
+    : BotAdminCommandHandler(configuration), ICommandMetadata
 {
-    private readonly string _adminUsername = configuration["Admin:Username"]
-                                             ?? throw new InvalidOperationException("Имя пользователя администратора не настроено.");
+    public static CommandMetadata Metadata { get; } = new("setalias", "Установить псевдоним для пользователя", true);
 
-    public static CommandMetadata Metadata { get; } = new("setalias", "Установить псевдоним для пользователя");
+    public override string Command => Metadata.Command;
 
-    public string Command => Metadata.Command;
-
-    public async Task<BotResponse> HandleAsync(Message message, CancellationToken cancellationToken)
+    public override async Task<BotResponse> HandleAsync(Message message, CancellationToken cancellationToken)
     {
         if (IsAdminMessage(message) == false)
         {
@@ -80,12 +78,5 @@ public class SetAliasCommandHandler(
                                """;
 
         return Message;
-    }
-
-    private bool IsAdminMessage(Message message)
-    {
-        return message.From != null
-               && string.IsNullOrEmpty(message.From.Username) == false
-               && message.From.Username.Equals(_adminUsername, StringComparison.OrdinalIgnoreCase);
     }
 }
