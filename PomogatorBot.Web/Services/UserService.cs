@@ -14,6 +14,8 @@ public interface IUserService
     Task<bool> DeleteAsync(long id, CancellationToken cancellationToken = default);
     Task<bool> ExistsAsync(long id, CancellationToken cancellationToken = default);
     Task<NotifyResponse> NotifyAsync(string message, Subscribes subscribes, CancellationToken cancellationToken = default);
+    Task<bool> SetAliasAsync(long id, string alias, CancellationToken cancellationToken = default);
+    Task<List<User>> GetAllUsersAsync(CancellationToken cancellationToken = default);
 }
 
 public class UserService(
@@ -66,6 +68,27 @@ public class UserService(
         return context.Users.AnyAsync(x => x.UserId == id, cancellationToken);
     }
 
+    public Task<List<User>> GetAllUsersAsync(CancellationToken cancellationToken = default)
+    {
+        return context.Users
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<bool> SetAliasAsync(long id, string alias, CancellationToken cancellationToken = default)
+    {
+        var user = await GetAsync(id, cancellationToken);
+
+        if (user == null)
+        {
+            return false;
+        }
+
+        user.Alias = alias;
+        await context.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
     public async Task<NotifyResponse> NotifyAsync(string message, Subscribes subscribes, CancellationToken cancellationToken = default)
     {
         var users = await context.Users
@@ -78,7 +101,8 @@ public class UserService(
         {
             var messageText = message
                 .Replace("<first_name>", user.FirstName)
-                .Replace("<username>", user.Username);
+                .Replace("<username>", user.Username)
+                .Replace("<alias>", string.IsNullOrEmpty(user.Alias) ? user.FirstName : user.Alias);
 
             try
             {

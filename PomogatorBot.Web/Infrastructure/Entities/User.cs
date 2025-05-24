@@ -18,6 +18,9 @@ public class User
     [MaxLength(255)]
     public string? LastName { get; set; }
 
+    [MaxLength(255)]
+    public string? Alias { get; set; }
+
     [Required]
     public DateTime CreatedAt { get; set; }
 

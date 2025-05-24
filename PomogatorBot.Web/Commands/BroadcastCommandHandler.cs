@@ -88,6 +88,11 @@ public class BroadcastCommandHandler(IConfiguration configuration, IUserService 
                        Доступные подписки:
                        {string.Join(Environment.NewLine, subscribes)}
 
+                       Доступные теги:
+                       <first_name> - имя пользователя
+                       <username> - ник пользователя
+                       <alias> - псевдоним пользователя (если нет, то имя)
+
                        ❗При {Subscribes.None} отправится всем пользователям
                        ❗При отсутствии подписок отправится всем пользователям
                        """;
