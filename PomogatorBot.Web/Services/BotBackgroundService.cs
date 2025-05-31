@@ -143,8 +143,8 @@ public class BotBackgroundService(
     private async Task UpdateDynamicMarkup(ITelegramBotClient bot, Message message, CancellationToken cancellationToken)
     {
         await using var scope = serviceProvider.CreateAsyncScope();
-        var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
-        var keyboardFactory = scope.ServiceProvider.GetRequiredService<IKeyboardFactory>();
+        var userService = scope.ServiceProvider.GetRequiredService<UserService>();
+        var keyboardFactory = scope.ServiceProvider.GetRequiredService<KeyboardFactory>();
 
         var user = await userService.GetAsync(message.Chat.Id, cancellationToken);
         var newMarkup = keyboardFactory.CreateForSubscriptions(user?.Subscriptions ?? Subscribes.None);
@@ -158,7 +158,7 @@ public class BotBackgroundService(
     private async Task EditOrSendResponse(ITelegramBotClient bot, long chatId, int? messageId, BotResponse response, CancellationToken cancellationToken)
     {
         await using var scope = serviceProvider.CreateAsyncScope();
-        var keyboardFactory = scope.ServiceProvider.GetRequiredService<IKeyboardFactory>();
+        var keyboardFactory = scope.ServiceProvider.GetRequiredService<KeyboardFactory>();
 
         var keyboard = response.KeyboardMarkup;
         keyboard ??= await keyboardFactory.CreateForWelcome(chatId, cancellationToken);

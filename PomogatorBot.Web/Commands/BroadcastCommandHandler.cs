@@ -1,10 +1,11 @@
 ﻿using PomogatorBot.Web.Commands.Common;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace PomogatorBot.Web.Commands;
 
-public class BroadcastCommandHandler(IConfiguration configuration, IUserService userService) : BotAdminCommandHandler(configuration), ICommandMetadata
+public class BroadcastCommandHandler(IConfiguration configuration, UserService userService) : BotAdminCommandHandler(configuration), ICommandMetadata
 {
     public static CommandMetadata Metadata { get; } = new("b", "Возвестить пастве", true);
 
@@ -19,47 +20,49 @@ public class BroadcastCommandHandler(IConfiguration configuration, IUserService 
 
         var length = Metadata.Command.Length + 1;
 
-        if (message.Text?.Length <= length)
+        if (string.IsNullOrWhiteSpace(message.Text) || message.Text.Length <= length)
         {
             return new(GetHelpMessage(), new());
         }
 
-        var messageText = message.Text?[length..]?.Trim();
+        var parts = message.Text.Split(" ", 3, StringSplitOptions.RemoveEmptyEntries);
 
-        if (string.IsNullOrEmpty(messageText))
+        if (parts.Length < 3)
         {
             return new(GetHelpMessage(), new());
         }
 
-        var subscribes = Subscribes.None;
-        var broadcastMessage = messageText;
-        var closingBracketIndex = messageText.IndexOf(']');
+        var args = parts[1];
+        var broadcastMessage = parts[2];
 
-        if (messageText.StartsWith('[') && closingBracketIndex != -1)
+        Subscribes subscribes;
+
+        try
         {
-            var subscriptionParam = messageText.Substring(1, closingBracketIndex - 1).Trim();
-            broadcastMessage = messageText[(closingBracketIndex + 1)..].Trim();
-
-            if (string.IsNullOrEmpty(broadcastMessage))
-            {
-                return new("Пожалуйста, укажите сообщение для рассылки после параметров подписок.", new());
-            }
-
-            try
-            {
-                subscribes = ParseSubscriptions(subscriptionParam);
-            }
-            catch (Exception ex)
-            {
-                return new(ex.Message);
-            }
+            subscribes = ParseSubscriptions(args);
         }
-        else
+        catch (Exception exception)
         {
-            return new("not found [ or ]");
+            return new(exception.Message);
         }
 
-        var response = await userService.NotifyAsync(broadcastMessage, subscribes, cancellationToken);
+        var entitiesOffset = message.Text.IndexOf(']', StringComparison.Ordinal) + 2;
+
+        var entities = message.Entities?
+            .SkipWhile(x => x.Type == MessageEntityType.BotCommand)
+            .Select(x => new MessageEntity
+            {
+                Length = x.Length,
+                Offset = x.Offset - entitiesOffset,
+                Type = x.Type,
+                Url = x.Url,
+                User = x.User,
+                Language = x.Language,
+                CustomEmojiId = x.CustomEmojiId,
+            })
+            .ToArray();
+
+        var response = await userService.NotifyAsync(broadcastMessage, subscribes, entities, cancellationToken);
 
         return new($"""
                     Рассылка завершена. 
@@ -97,8 +100,15 @@ public class BroadcastCommandHandler(IConfiguration configuration, IUserService 
         return message;
     }
 
-    private static Subscribes ParseSubscriptions(string subscriptionParam)
+    private static Subscribes ParseSubscriptions(string args)
     {
+        if (args.StartsWith('[') == false || args.EndsWith(']') == false)
+        {
+            throw new("not found [ or ]");
+        }
+
+        var subscriptionParam = args.Trim('[', ']');
+
         var result = Subscribes.None;
 
         if (string.IsNullOrWhiteSpace(subscriptionParam))

@@ -4,7 +4,7 @@ using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.CallbackQueries;
 
-public class ToggleSubscriptionHandler(IUserService userService, ILogger<ToggleSubscriptionHandler> logger) : ICallbackQueryHandler
+public class ToggleSubscriptionHandler(UserService userService, ILogger<ToggleSubscriptionHandler> logger) : ICallbackQueryHandler
 {
     private const string TogglePrefix = "toggle_";
 

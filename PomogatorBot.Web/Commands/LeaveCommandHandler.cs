@@ -4,7 +4,7 @@ using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Commands;
 
-public class LeaveCommandHandler(IUserService userService) : IBotCommandHandler, ICommandMetadata
+public class LeaveCommandHandler(UserService userService) : IBotCommandHandler, ICommandMetadata
 {
     public static CommandMetadata Metadata { get; } = new("leave", "Покинуть систему");
 

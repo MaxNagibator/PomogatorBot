@@ -4,13 +4,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace PomogatorBot.Web.Services;
 
-public interface IKeyboardFactory
-{
-    InlineKeyboardMarkup CreateForSubscriptions(Subscribes subscriptions);
-    Task<InlineKeyboardMarkup> CreateForWelcome(long? userId = null, CancellationToken cancellationToken = default);
-}
-
-public class KeyboardFactory(IUserService userService) : IKeyboardFactory
+public class KeyboardFactory(UserService userService)
 {
     public InlineKeyboardMarkup CreateForSubscriptions(Subscribes subscriptions)
     {

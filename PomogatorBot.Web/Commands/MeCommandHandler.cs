@@ -4,7 +4,7 @@ using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Commands;
 
-public class MeCommandHandler(IUserService userService) : IBotCommandHandler, ICommandMetadata
+public class MeCommandHandler(UserService userService) : IBotCommandHandler, ICommandMetadata
 {
     public static CommandMetadata Metadata { get; } = new("me", "Показать информацию о себе");
 

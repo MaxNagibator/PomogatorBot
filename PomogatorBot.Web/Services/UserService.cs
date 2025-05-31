@@ -7,21 +7,10 @@ using User = PomogatorBot.Web.Infrastructure.Entities.User;
 
 namespace PomogatorBot.Web.Services;
 
-public interface IUserService
-{
-    ValueTask<User?> GetAsync(long id, CancellationToken cancellationToken = default);
-    Task SaveAsync(User entity, CancellationToken cancellationToken = default);
-    Task<bool> DeleteAsync(long id, CancellationToken cancellationToken = default);
-    Task<bool> ExistsAsync(long id, CancellationToken cancellationToken = default);
-    Task<NotifyResponse> NotifyAsync(string message, Subscribes subscribes, CancellationToken cancellationToken = default);
-    Task<bool> SetAliasAsync(long id, string alias, CancellationToken cancellationToken = default);
-    Task<List<User>> GetAllUsersAsync(CancellationToken cancellationToken = default);
-}
-
 public class UserService(
     ApplicationDbContext context,
     ITelegramBotClient botClient,
-    ILogger<UserService> logger) : IUserService
+    ILogger<UserService> logger)
 {
     private static readonly LinkPreviewOptions LinkPreviewOptions = new()
     {
@@ -89,7 +78,7 @@ public class UserService(
         return true;
     }
 
-    public async Task<NotifyResponse> NotifyAsync(string message, Subscribes subscribes, CancellationToken cancellationToken = default)
+    public async Task<NotifyResponse> NotifyAsync(string message, Subscribes subscribes, MessageEntity[]? entities = null, CancellationToken cancellationToken = default)
     {
         var users = await context.Users
             .Where(x => (x.Subscriptions & subscribes) == subscribes)
@@ -109,6 +98,8 @@ public class UserService(
                 await botClient.SendMessage(user.UserId,
                     messageText,
                     linkPreviewOptions: LinkPreviewOptions,
+                    replyMarkup: null,
+                    entities: entities,
                     cancellationToken: cancellationToken);
 
                 successfulSends++;

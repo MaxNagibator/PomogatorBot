@@ -5,8 +5,8 @@ using Telegram.Bot.Types;
 namespace PomogatorBot.Web.Commands;
 
 public class SubscriptionsCommandHandler(
-    IUserService userService,
-    IKeyboardFactory keyboardFactory) : IBotCommandHandler, ICommandMetadata
+    UserService userService,
+    KeyboardFactory keyboardFactory) : IBotCommandHandler, ICommandMetadata
 {
     public static CommandMetadata Metadata { get; } = new("subscriptions", "Управление подписками");
 

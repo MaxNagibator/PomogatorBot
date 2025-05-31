@@ -6,7 +6,7 @@ namespace PomogatorBot.Web.Commands;
 
 public class UsersCommandHandler(
     IConfiguration configuration,
-    IUserService userService)
+    UserService userService)
     : BotAdminCommandHandler(configuration), ICommandMetadata
 {
     public static CommandMetadata Metadata { get; } = new("users", "Показать список всех пользователей", true);

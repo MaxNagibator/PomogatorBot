@@ -46,8 +46,8 @@ try
     builder.Services.AddBotCallbackQueryHandlers(typeof(Program).Assembly)
         .AddScoped<CallbackQueryRouter>();
 
-    builder.Services.AddScoped<IKeyboardFactory, KeyboardFactory>()
-        .AddScoped<IUserService, UserService>();
+    builder.Services.AddScoped<KeyboardFactory>()
+        .AddScoped<UserService>();
 
     builder.Services.AddProblemDetails(options =>
     {

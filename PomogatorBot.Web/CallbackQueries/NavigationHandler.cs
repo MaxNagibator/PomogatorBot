@@ -4,7 +4,7 @@ using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.CallbackQueries;
 
-public class NavigationHandler(IUserService userService) : ICallbackQueryHandler
+public class NavigationHandler(UserService userService) : ICallbackQueryHandler
 {
     public const string MenuBack = "menu_back";
     private const string MenuMain = "menu_main";

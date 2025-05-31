@@ -4,7 +4,7 @@ using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Commands;
 
-public class DefaultCommandHandler(IUserService userService) : IBotCommandHandler
+public class DefaultCommandHandler(UserService userService) : IBotCommandHandler
 {
     public string Command => string.Empty;
 

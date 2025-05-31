@@ -6,7 +6,7 @@ namespace PomogatorBot.Web.Commands;
 
 public class SetAliasCommandHandler(
     IConfiguration configuration,
-    IUserService userService,
+    UserService userService,
     ILogger<SetAliasCommandHandler> logger)
     : BotAdminCommandHandler(configuration), ICommandMetadata
 {

@@ -6,7 +6,7 @@ using User = PomogatorBot.Web.Infrastructure.Entities.User;
 namespace PomogatorBot.Web.Commands;
 
 public class JoinCommandHandler(
-    IUserService userService,
+    UserService userService,
     ILogger<JoinCommandHandler> logger) : IBotCommandHandler, ICommandMetadata
 {
     public static CommandMetadata Metadata { get; } = new("join", "Присоединиться к системе");

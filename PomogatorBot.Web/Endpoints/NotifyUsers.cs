@@ -9,7 +9,7 @@ public static class NotifyUsers
 
     public record Response(int TotalUsers, int SuccessfulSends, int FailedSends, DateTime Timestamp);
 
-    public class Endpoint(IUserService userService) : Endpoint<Request, Response>
+    public class Endpoint(UserService userService) : Endpoint<Request, Response>
     {
         public override void Configure()
         {
@@ -19,7 +19,7 @@ public static class NotifyUsers
 
         public override async Task HandleAsync(Request request, CancellationToken cancellationToken)
         {
-            var response = await userService.NotifyAsync(request.Message, request.Subscribes, cancellationToken);
+            var response = await userService.NotifyAsync(request.Message, request.Subscribes, cancellationToken: cancellationToken);
             await SendOkAsync(new(response.TotalUsers, response.SuccessfulSends, response.FailedSends, DateTime.UtcNow), cancellationToken);
         }
     }
