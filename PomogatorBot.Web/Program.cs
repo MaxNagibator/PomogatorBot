@@ -9,7 +9,7 @@ using Serilog;
 using Serilog.Events;
 using Telegram.Bot;
 
-var logPath = Path.Combine(Directory.GetCurrentDirectory(), "logs", "verbose.log");
+var logPath = Path.Combine(Environment.ProcessPath ?? Environment.CurrentDirectory, "logs", "verbose.log");
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft.AspNetCore.Hosting", LogEventLevel.Warning)
@@ -82,17 +82,32 @@ try
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
+        var maxRetries = 5;
+        var retryCount = 0;
+        var delay = TimeSpan.FromSeconds(1);
 
-        try
+        while (true)
         {
-            var dbContext = services.GetRequiredService<ApplicationDbContext>();
-            dbContext.Database.Migrate();
+            try
+            {
+                var dbContext = services.GetRequiredService<ApplicationDbContext>();
+                dbContext.Database.Migrate();
+                Log.Information("Промигрировано");
+                break;
+            }
+            catch (Exception ex)
+            {
+                retryCount++;
 
-            Log.Information("Промигрировано");
-        }
-        catch (Exception ex)
-        {
-            throw new("migration fail", ex);
+                if (retryCount >= maxRetries)
+                {
+                    throw new($"migration fail after {retryCount} attempts", ex);
+                }
+
+                Log.Warning(ex, "Migration attempt {RetryCount} failed, retrying in {Delay}s", retryCount, delay.TotalSeconds);
+                await Task.Delay(delay);
+                delay *= 2;
+            }
         }
     }
 

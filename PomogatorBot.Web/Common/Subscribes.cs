@@ -12,12 +12,6 @@ public enum Subscribes
     [SubscriptionMeta("Игровые трансляции", "#ff6699", "🎮")]
     GameStreams = 1 << 1,
 
-    //[SubscriptionMeta("Доброе утро", "#ffcc00", "🌅")]
-    //DobroeUtro = 1 << 2,
-
-    //[SubscriptionMeta("Spoki Noki", "#9c27b0", "🌙")]
-    //SpokiNoki = 1 << 3,
-
     [SubscriptionMeta("Все подписки", "#4CAF50", "✅")]
-    All = EducationStreams | GameStreams //| DobroeUtro | SpokiNoki,
+    All = EducationStreams | GameStreams,
 }
