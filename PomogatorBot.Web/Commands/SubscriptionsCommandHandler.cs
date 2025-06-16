@@ -1,33 +1,21 @@
 ﻿using PomogatorBot.Web.Commands.Common;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
+using DatabaseUser = PomogatorBot.Web.Infrastructure.Entities.User;
 
 namespace PomogatorBot.Web.Commands;
 
 public class SubscriptionsCommandHandler(
     UserService userService,
-    KeyboardFactory keyboardFactory) : IBotCommandHandler, ICommandMetadata
+    KeyboardFactory keyboardFactory) : UserRequiredCommandHandler(userService), ICommandMetadata
 {
     public static CommandMetadata Metadata { get; } = new("subscriptions", "Управление подписками");
 
-    public string Command => Metadata.Command;
+    public override string Command => Metadata.Command;
 
-    public async Task<BotResponse> HandleAsync(Message message, CancellationToken cancellationToken)
+    protected override Task<BotResponse> HandleUserCommandAsync(Message message, DatabaseUser user, CancellationToken cancellationToken)
     {
-        var validationError = message.ValidateUser(out var userId);
-
-        if (validationError != null)
-        {
-            return validationError;
-        }
-
-        var user = await userService.GetAsync(userId, cancellationToken);
-
-        if (user == null)
-        {
-            return new(Messages.JoinBefore);
-        }
-
-        return new("Управление подписками:", keyboardFactory.CreateForSubscriptions(user.Subscriptions));
+        var response = new BotResponse("Управление подписками:", keyboardFactory.CreateForSubscriptions(user.Subscriptions));
+        return Task.FromResult(response);
     }
 }
