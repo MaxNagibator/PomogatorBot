@@ -9,18 +9,22 @@ public class BroadcastConfirmationHandler(
     UserService userService,
     KeyboardFactory keyboardFactory,
     MessagePreviewService messagePreviewService,
-    ILogger<BroadcastConfirmationHandler> logger)
-    : ICallbackQueryHandler
+    ILogger<BroadcastConfirmationHandler> logger) : ICallbackQueryHandler
 {
     private const string ConfirmPrefix = "broadcast_confirm_";
     private const string CancelPrefix = "broadcast_cancel_";
     private const string ShowSubsPrefix = "broadcast_show_subs_";
 
+    private static readonly IReadOnlyDictionary<string, string> PrefixActions = new Dictionary<string, string>
+    {
+        { ConfirmPrefix, "confirm" },
+        { CancelPrefix, "cancel" },
+        { ShowSubsPrefix, "show_subs" },
+    };
+
     public bool CanHandle(string callbackData)
     {
-        return callbackData.StartsWith(ConfirmPrefix, StringComparison.OrdinalIgnoreCase)
-               || callbackData.StartsWith(CancelPrefix, StringComparison.OrdinalIgnoreCase)
-               || callbackData.StartsWith(ShowSubsPrefix, StringComparison.OrdinalIgnoreCase);
+        return CallbackDataParser.TryParseWithMultiplePrefixes(callbackData, PrefixActions, out _, out _);
     }
 
     public async Task<BotResponse> HandleCallbackAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken)
@@ -28,25 +32,7 @@ public class BroadcastConfirmationHandler(
         var userId = callbackQuery.From.Id;
         var callbackData = callbackQuery.Data!;
 
-        string pendingId;
-        string action;
-
-        if (callbackData.StartsWith(ConfirmPrefix, StringComparison.OrdinalIgnoreCase))
-        {
-            action = "confirm";
-            pendingId = callbackData[ConfirmPrefix.Length..];
-        }
-        else if (callbackData.StartsWith(CancelPrefix, StringComparison.OrdinalIgnoreCase))
-        {
-            action = "cancel";
-            pendingId = callbackData[CancelPrefix.Length..];
-        }
-        else if (callbackData.StartsWith(ShowSubsPrefix, StringComparison.OrdinalIgnoreCase))
-        {
-            action = "show_subs";
-            pendingId = callbackData[ShowSubsPrefix.Length..];
-        }
-        else
+        if (CallbackDataParser.TryParseWithMultiplePrefixes(callbackData, PrefixActions, out var action, out var pendingId) == false)
         {
             logger.LogWarning("Unknown broadcast callback action: {CallbackData}", callbackData);
             return new("Неизвестное действие");

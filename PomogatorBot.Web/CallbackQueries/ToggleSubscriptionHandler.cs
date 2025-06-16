@@ -14,17 +14,21 @@ public class ToggleSubscriptionHandler(
 
     public static string GetFormatedToggle(Subscribes subscription)
     {
-        return TogglePrefix + subscription;
+        return CallbackDataParser.CreateWithPrefix(TogglePrefix, subscription.ToString());
     }
 
     public override bool CanHandle(string callbackData)
     {
-        return callbackData.StartsWith(TogglePrefix, StringComparison.OrdinalIgnoreCase);
+        return CallbackDataParser.TryParseWithPrefix(callbackData, TogglePrefix, out _);
     }
 
     protected override async Task<BotResponse> HandleUserCallbackAsync(CallbackQuery callbackQuery, DatabaseUser user, CancellationToken cancellationToken)
     {
-        var subscriptionName = callbackQuery.Data!.Split('_')[1];
+        if (CallbackDataParser.TryParseWithPrefix(callbackQuery.Data!, TogglePrefix, out var subscriptionName) == false)
+        {
+            logger.LogWarning("Invalid callback data format: {CallbackData}", callbackQuery.Data);
+            return new("Неверный формат данных");
+        }
 
         if (Enum.TryParse<Subscribes>(subscriptionName, out var subscription) == false)
         {
