@@ -7,7 +7,8 @@ namespace PomogatorBot.Web.Commands;
 
 public class SubscriptionsCommandHandler(
     UserService userService,
-    KeyboardFactory keyboardFactory) : UserRequiredCommandHandler(userService), ICommandMetadata
+    KeyboardFactory keyboardFactory)
+    : UserRequiredCommandHandler(userService), ICommandMetadata
 {
     public static CommandMetadata Metadata { get; } = new("subscriptions", "Управление подписками");
 

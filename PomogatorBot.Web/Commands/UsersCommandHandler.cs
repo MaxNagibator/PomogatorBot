@@ -7,19 +7,14 @@ namespace PomogatorBot.Web.Commands;
 public class UsersCommandHandler(
     IConfiguration configuration,
     UserService userService)
-    : BotAdminCommandHandler(configuration), ICommandMetadata
+    : AdminRequiredCommandHandler(configuration), ICommandMetadata
 {
     public static CommandMetadata Metadata { get; } = new("users", "Показать список всех пользователей", true);
 
     public override string Command => Metadata.Command;
 
-    public override async Task<BotResponse> HandleAsync(Message message, CancellationToken cancellationToken)
+    protected override async Task<BotResponse> HandleAdminCommandAsync(Message message, CancellationToken cancellationToken)
     {
-        if (IsAdminMessage(message) == false)
-        {
-            return new("Вы не администратор.");
-        }
-
         var users = await userService.GetAllUsersAsync(cancellationToken);
 
         if (users.Count == 0)

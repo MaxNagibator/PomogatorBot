@@ -8,19 +8,14 @@ public class SetAliasCommandHandler(
     IConfiguration configuration,
     UserService userService,
     ILogger<SetAliasCommandHandler> logger)
-    : BotAdminCommandHandler(configuration), ICommandMetadata
+    : AdminRequiredCommandHandler(configuration), ICommandMetadata
 {
     public static CommandMetadata Metadata { get; } = new("setalias", "Установить псевдоним для пользователя", true);
 
     public override string Command => Metadata.Command;
 
-    public override async Task<BotResponse> HandleAsync(Message message, CancellationToken cancellationToken)
+    protected override async Task<BotResponse> HandleAdminCommandAsync(Message message, CancellationToken cancellationToken)
     {
-        if (IsAdminMessage(message) == false)
-        {
-            return new("Вы не администратор.", new());
-        }
-
         var length = Metadata.Command.Length + 1;
 
         if (message.Text?.Length <= length)

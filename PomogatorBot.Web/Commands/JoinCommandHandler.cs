@@ -7,7 +7,8 @@ namespace PomogatorBot.Web.Commands;
 
 public class JoinCommandHandler(
     UserService userService,
-    ILogger<JoinCommandHandler> logger) : IBotCommandHandler, ICommandMetadata
+    ILogger<JoinCommandHandler> logger)
+    : IBotCommandHandler, ICommandMetadata
 {
     public static CommandMetadata Metadata { get; } = new("join", "Присоединиться к системе");
 

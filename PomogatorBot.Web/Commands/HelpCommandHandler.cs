@@ -3,16 +3,14 @@ using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Commands;
 
-public class HelpCommandHandler : BotAdminCommandHandler, ICommandMetadata
+public class HelpCommandHandler(
+    IConfiguration configuration,
+    IEnumerable<CommandMetadata> commands)
+    : AdminCommandHandler(configuration), ICommandMetadata
 {
-    private readonly IEnumerable<CommandMetadata> _commands;
-
-    public HelpCommandHandler(IConfiguration configuration, IEnumerable<CommandMetadata> commands) : base(configuration)
-    {
-        _commands = commands
-            .Where(x => string.IsNullOrEmpty(x.Description) == false)
-            .OrderBy(x => x.Command);
-    }
+    private readonly IEnumerable<CommandMetadata> _commands = commands
+        .Where(x => string.IsNullOrEmpty(x.Description) == false)
+        .OrderBy(x => x.Command);
 
     public static CommandMetadata Metadata { get; } = new("help", "Показать справку");
 
