@@ -63,8 +63,6 @@ public class BroadcastCommandHandler(
             })
             .ToArray();
 
-        // TODO: Обобщить с BroadcastConfirmationHandler
-
         var userCount = await userService.GetUserCountBySubscriptionAsync(subscribes, cancellationToken);
         var pendingId = broadcastPendingService.StorePendingBroadcast(broadcastMessage, subscribes, entities, message.From!.Id);
         var subscriptionInfo = GetSubscriptionDisplayInfo(subscribes);
@@ -74,20 +72,19 @@ public class BroadcastCommandHandler(
                              📢 Подтверждение рассылки:
 
                              🎯 Подписки: {subscriptionInfo}
-                             👥 Получателей: {userCount}
+                             👥 Получателей (админ учитывается): {userCount}
 
                              📋 Предварительный просмотр (как увидят пользователи):
-                             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                             ━━━━━
                              """;
 
         var previewFooter = """
-                            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+                            ━━━━━
                             ⚠️ Подтвердите отправку рассылки всем указанным пользователям.
                             """;
 
-        var confirmationMessage = previewHeader + preview.PreviewText + previewFooter;
-        var adjustedEntities = AdjustEntitiesForConfirmationMessage(preview.PreviewEntities, previewHeader.Length);
+        var confirmationMessage = string.Join(Environment.NewLine, previewHeader, preview.PreviewText, previewFooter);
+        var adjustedEntities = AdjustEntitiesForConfirmationMessage(preview.PreviewEntities, previewHeader.Length + Environment.NewLine.Length);
         var keyboard = keyboardFactory.CreateForBroadcastConfirmation(pendingId);
 
         return new(confirmationMessage, keyboard, adjustedEntities);

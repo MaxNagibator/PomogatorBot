@@ -83,9 +83,8 @@ public class KeyboardFactory(UserService userService)
     {
         List<InlineKeyboardButton[]> buttons =
         [
-            CreateConfirmationRow("✅ Подтвердить рассылку", $"broadcast_confirm_{pendingId}",
-                "❌ Отменить", $"broadcast_cancel_{pendingId}"),
-            CreateButtonRow(CreateCallbackButton("📋", "Показать подписки", $"broadcast_show_subs_{pendingId}")),
+            CreateConfirmationRow("✅ Подтвердить рассылку", BroadcastConfirmationHandler.ConfirmPrefix + pendingId,
+                "❌ Отменить", BroadcastConfirmationHandler.CancelPrefix + pendingId),
         ];
 
         return new(buttons);

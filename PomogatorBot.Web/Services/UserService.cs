@@ -86,10 +86,22 @@ public class UserService(
             .CountAsync(cancellationToken);
     }
 
-    public async Task<NotifyResponse> NotifyAsync(string message, Subscribes subscribes, MessageEntity[]? entities = null, CancellationToken cancellationToken = default)
+    public async Task<NotifyResponse> NotifyAsync(
+        string message,
+        Subscribes subscribes,
+        MessageEntity[]? entities = null,
+        long? adminId = null,
+        CancellationToken cancellationToken = default)
     {
-        var users = await context.Users
-            .Where(x => (x.Subscriptions & subscribes) == subscribes)
+        var queryable = context.Users
+            .Where(x => (x.Subscriptions & subscribes) == subscribes);
+
+        if (adminId.HasValue)
+        {
+            queryable = queryable.Where(x => x.UserId != adminId.Value);
+        }
+
+        var users = await queryable
             .ToListAsync(cancellationToken);
 
         var successfulSends = 0;
