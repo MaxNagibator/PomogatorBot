@@ -10,14 +10,14 @@ public class DefaultCommandHandler(UserService userService) : IBotCommandHandler
 
     public async Task<BotResponse> HandleAsync(Message message, CancellationToken cancellationToken)
     {
-        var userId = message.From?.Id;
+        var validationError = message.ValidateUser(out var userId);
 
-        if (userId == null)
+        if (validationError != null)
         {
-            return new("Ошибка идентификации пользователя");
+            return validationError;
         }
 
-        var exists = await userService.ExistsAsync(userId.Value, cancellationToken);
+        var exists = await userService.ExistsAsync(userId, cancellationToken);
 
         return exists
             ? new($"Не понимаю команду. Используйте /{HelpCommandHandler.Metadata.Command} для списка команд")

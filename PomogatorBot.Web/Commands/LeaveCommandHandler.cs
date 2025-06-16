@@ -12,21 +12,21 @@ public class LeaveCommandHandler(UserService userService) : IBotCommandHandler, 
 
     public async Task<BotResponse> HandleAsync(Message message, CancellationToken cancellationToken)
     {
-        var userId = message.From?.Id;
+        var validationError = message.ValidateUser(out var userId);
 
-        if (userId == null)
+        if (validationError != null)
         {
-            return new("Ошибка идентификации пользователя");
+            return validationError;
         }
 
-        var user = await userService.GetAsync(userId.Value, cancellationToken);
+        var user = await userService.GetAsync(userId, cancellationToken);
 
         if (user == null)
         {
             return new("Вы не зарегистрированы");
         }
 
-        await userService.DeleteAsync(userId.Value, cancellationToken);
+        await userService.DeleteAsync(userId, cancellationToken);
         return new($"До свидания, {user.FirstName}! Мы будем скучать 😢");
     }
 }

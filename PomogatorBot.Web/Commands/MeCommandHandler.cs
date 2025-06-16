@@ -12,14 +12,14 @@ public class MeCommandHandler(UserService userService) : IBotCommandHandler, ICo
 
     public async Task<BotResponse> HandleAsync(Message message, CancellationToken cancellationToken)
     {
-        var userId = message.From?.Id;
+        var validationError = message.ValidateUser(out var userId);
 
-        if (userId == null)
+        if (validationError != null)
         {
-            return new("Ошибка идентификации пользователя");
+            return validationError;
         }
 
-        var user = await userService.GetAsync(userId.Value, cancellationToken);
+        var user = await userService.GetAsync(userId, cancellationToken);
 
         if (user == null)
         {
