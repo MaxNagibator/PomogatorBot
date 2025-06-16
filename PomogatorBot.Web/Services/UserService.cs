@@ -10,6 +10,7 @@ namespace PomogatorBot.Web.Services;
 public class UserService(
     ApplicationDbContext context,
     ITelegramBotClient botClient,
+    MessageTemplateService messageTemplateService,
     ILogger<UserService> logger)
 {
     private static readonly LinkPreviewOptions LinkPreviewOptions = new()
@@ -95,10 +96,7 @@ public class UserService(
 
         foreach (var user in users)
         {
-            var messageText = message
-                .Replace("<first_name>", user.FirstName, StringComparison.OrdinalIgnoreCase)
-                .Replace("<username>", user.Username, StringComparison.OrdinalIgnoreCase)
-                .Replace("<alias>", string.IsNullOrEmpty(user.Alias) ? user.FirstName : user.Alias, StringComparison.OrdinalIgnoreCase);
+            var messageText = messageTemplateService.ReplaceUserVariables(message, user);
 
             try
             {

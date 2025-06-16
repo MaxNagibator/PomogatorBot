@@ -2,7 +2,7 @@ using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Services;
 
-public class MessagePreviewService
+public class MessagePreviewService(MessageTemplateService messageTemplateService)
 {
     public MessagePreviewResult CreatePreview(string message, MessageEntity[]? entities)
     {
@@ -18,15 +18,12 @@ public class MessagePreviewService
         };
     }
 
-    private static string ApplyTemplateVariables(string message)
+    private string ApplyTemplateVariables(string message)
     {
-        return message
-            .Replace("<first_name>", "Иван", StringComparison.OrdinalIgnoreCase)
-            .Replace("<username>", "@admin", StringComparison.OrdinalIgnoreCase)
-            .Replace("<alias>", "Админ", StringComparison.OrdinalIgnoreCase);
+        return messageTemplateService.ReplacePreviewVariables(message);
     }
 
-    private static MessageEntity[]? AdjustEntitiesForPreview(string originalMessage, string previewMessage, MessageEntity[]? originalEntities)
+    private MessageEntity[]? AdjustEntitiesForPreview(string originalMessage, string previewMessage, MessageEntity[]? originalEntities)
     {
         if (originalEntities == null || originalEntities.Length == 0)
         {
@@ -48,7 +45,7 @@ public class MessagePreviewService
         return adjustedEntities.ToArray();
     }
 
-    private static MessageEntity? AdjustEntityOffset(string originalMessage, string previewMessage, MessageEntity entity)
+    private MessageEntity? AdjustEntityOffset(string originalMessage, string previewMessage, MessageEntity entity)
     {
         var originalOffset = entity.Offset;
         var originalLength = entity.Length;

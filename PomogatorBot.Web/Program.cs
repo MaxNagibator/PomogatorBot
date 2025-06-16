@@ -49,6 +49,7 @@ try
     builder.Services.AddScoped<KeyboardFactory>()
         .AddScoped<UserService>()
         .AddScoped<MessagePreviewService>()
+        .AddScoped<MessageTemplateService>()
         .AddSingleton<BroadcastPendingService>();
 
     builder.Services.AddProblemDetails(options =>
