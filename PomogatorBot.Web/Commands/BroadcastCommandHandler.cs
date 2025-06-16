@@ -5,7 +5,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace PomogatorBot.Web.Commands;
 
-public class BroadcastCommandHandler(IConfiguration configuration, UserService userService) : BotAdminCommandHandler(configuration), ICommandMetadata
+public class BroadcastCommandHandler(IConfiguration configuration, UserService userService, KeyboardFactory keyboardFactory, BroadcastPendingService broadcastPendingService, MessagePreviewService messagePreviewService) : BotAdminCommandHandler(configuration), ICommandMetadata
 {
     public static CommandMetadata Metadata { get; } = new("b", "Возвестить пастве", true);
 
@@ -62,14 +62,34 @@ public class BroadcastCommandHandler(IConfiguration configuration, UserService u
             })
             .ToArray();
 
-        var response = await userService.NotifyAsync(broadcastMessage, subscribes, entities, cancellationToken);
+        // TODO: Обобщить с BroadcastConfirmationHandler
 
-        return new($"""
-                    Рассылка завершена. 
-                    Успешно - {response.SuccessfulSends}
-                    С ошибкой - {response.FailedSends}
-                    Всего - {response.TotalUsers}
-                    """, new());
+        var userCount = await userService.GetUserCountBySubscriptionAsync(subscribes, cancellationToken);
+        var pendingId = broadcastPendingService.StorePendingBroadcast(broadcastMessage, subscribes, entities, message.From!.Id);
+        var subscriptionInfo = GetSubscriptionDisplayInfo(subscribes);
+        var preview = messagePreviewService.CreatePreview(broadcastMessage, entities);
+
+        var previewHeader = $"""
+                             📢 Подтверждение рассылки:
+
+                             🎯 Подписки: {subscriptionInfo}
+                             👥 Получателей: {userCount}
+
+                             📋 Предварительный просмотр (как увидят пользователи):
+                             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                             """;
+
+        var previewFooter = """
+                            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                            ⚠️ Подтвердите отправку рассылки всем указанным пользователям.
+                            """;
+
+        var confirmationMessage = previewHeader + preview.PreviewText + previewFooter;
+        var adjustedEntities = AdjustEntitiesForConfirmationMessage(preview.PreviewEntities, previewHeader.Length);
+        var keyboard = keyboardFactory.CreateForBroadcastConfirmation(pendingId);
+
+        return new(confirmationMessage, keyboard, adjustedEntities);
     }
 
     private static string GetHelpMessage()
@@ -131,5 +151,47 @@ public class BroadcastCommandHandler(IConfiguration configuration, UserService u
         }
 
         return result;
+    }
+
+    private static string GetSubscriptionDisplayInfo(Subscribes subscribes)
+    {
+        if (subscribes == Subscribes.None)
+        {
+            return "Всем пользователям";
+        }
+
+        var metadata = SubscriptionExtensions.GetSubscriptionMetadata();
+
+        var activeSubscriptions = metadata.Values
+            .Where(x => x.Subscription != Subscribes.None
+                        && x.Subscription != Subscribes.All
+                        && subscribes.HasFlag(x.Subscription))
+            .Select(x => $"{x.Icon} {x.DisplayName}")
+            .ToList();
+
+        return activeSubscriptions.Count > 0
+            ? string.Join(", ", activeSubscriptions)
+            : "Всем пользователям";
+    }
+
+    private static MessageEntity[]? AdjustEntitiesForConfirmationMessage(MessageEntity[]? entities, int offset)
+    {
+        if (entities == null || entities.Length == 0)
+        {
+            return null;
+        }
+
+        return entities
+            .Select(x => new MessageEntity
+            {
+                Type = x.Type,
+                Offset = x.Offset + offset,
+                Length = x.Length,
+                Url = x.Url,
+                User = x.User,
+                Language = x.Language,
+                CustomEmojiId = x.CustomEmojiId,
+            })
+            .ToArray();
     }
 }

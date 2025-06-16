@@ -47,7 +47,9 @@ try
         .AddScoped<CallbackQueryRouter>();
 
     builder.Services.AddScoped<KeyboardFactory>()
-        .AddScoped<UserService>();
+        .AddScoped<UserService>()
+        .AddScoped<MessagePreviewService>()
+        .AddSingleton<BroadcastPendingService>();
 
     builder.Services.AddProblemDetails(options =>
     {

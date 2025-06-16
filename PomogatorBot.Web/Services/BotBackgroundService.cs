@@ -171,6 +171,7 @@ public class BotBackgroundService(
                     messageId.Value,
                     response.Message,
                     replyMarkup: keyboard,
+                    entities: response.Entities,
                     cancellationToken: cancellationToken);
             }
             catch (ApiRequestException exception) when (exception.Message.Contains("message is not modified"))
@@ -182,6 +183,7 @@ public class BotBackgroundService(
             await bot.SendMessage(chatId,
                 response.Message,
                 replyMarkup: keyboard,
+                entities: response.Entities,
                 cancellationToken: cancellationToken);
         }
     }

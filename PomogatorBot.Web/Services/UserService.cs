@@ -78,6 +78,13 @@ public class UserService(
         return true;
     }
 
+    public async Task<int> GetUserCountBySubscriptionAsync(Subscribes subscribes, CancellationToken cancellationToken = default)
+    {
+        return await context.Users
+            .Where(x => (x.Subscriptions & subscribes) == subscribes)
+            .CountAsync(cancellationToken);
+    }
+
     public async Task<NotifyResponse> NotifyAsync(string message, Subscribes subscribes, MessageEntity[]? entities = null, CancellationToken cancellationToken = default)
     {
         var users = await context.Users

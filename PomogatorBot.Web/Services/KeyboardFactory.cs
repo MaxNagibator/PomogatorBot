@@ -58,6 +58,22 @@ public class KeyboardFactory(UserService userService)
         return new(buttons);
     }
 
+    public InlineKeyboardMarkup CreateForBroadcastConfirmation(string pendingId)
+    {
+        List<InlineKeyboardButton[]> buttons = [];
+
+        buttons.Add([
+            InlineKeyboardButton.WithCallbackData("✅ Подтвердить рассылку", $"broadcast_confirm_{pendingId}"),
+            InlineKeyboardButton.WithCallbackData("❌ Отменить", $"broadcast_cancel_{pendingId}"),
+        ]);
+
+        buttons.Add([
+            InlineKeyboardButton.WithCallbackData("📋 Показать подписки", $"broadcast_show_subs_{pendingId}"),
+        ]);
+
+        return new(buttons);
+    }
+
     private static InlineKeyboardButton MakeSubscriptionButton(SubscriptionMeta meta, Subscribes current)
     {
         var isActive = current.HasFlag(meta.Subscription);
