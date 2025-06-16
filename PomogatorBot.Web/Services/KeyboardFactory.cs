@@ -6,6 +6,40 @@ namespace PomogatorBot.Web.Services;
 
 public class KeyboardFactory(UserService userService)
 {
+    public static InlineKeyboardButton CreateCallbackButton(string icon, string text, string callbackData)
+    {
+        return InlineKeyboardButton.WithCallbackData($"{icon} {text}", callbackData);
+    }
+
+    public static InlineKeyboardButton CreateCallbackButton(string text, string callbackData)
+    {
+        return InlineKeyboardButton.WithCallbackData(text, callbackData);
+    }
+
+    public static InlineKeyboardButton[] CreateButtonRow(InlineKeyboardButton leftButton, InlineKeyboardButton rightButton)
+    {
+        return [leftButton, rightButton];
+    }
+
+    public static InlineKeyboardButton[] CreateButtonRow(InlineKeyboardButton button)
+    {
+        return [button];
+    }
+
+    public static InlineKeyboardButton[] CreateConfirmationRow(string confirmText, string confirmCallback, string cancelText, string cancelCallback)
+    {
+        return
+        [
+            InlineKeyboardButton.WithCallbackData(confirmText, confirmCallback),
+            InlineKeyboardButton.WithCallbackData(cancelText, cancelCallback),
+        ];
+    }
+
+    public static InlineKeyboardButton CreateBackButton(string callbackData)
+    {
+        return InlineKeyboardButton.WithCallbackData("🔙 Назад", callbackData);
+    }
+
     public InlineKeyboardMarkup CreateForSubscriptions(Subscribes subscriptions)
     {
         var buttons = SubscriptionExtensions.SubscriptionMetadata
@@ -15,14 +49,10 @@ public class KeyboardFactory(UserService userService)
             .Select(x => new[] { x })
             .ToList();
 
-        buttons.Add([
-            InlineKeyboardButton.WithCallbackData("✅ Включить все", ToggleSubscriptionHandler.GetFormatedToggle(Subscribes.All)),
-            InlineKeyboardButton.WithCallbackData("❌ Выключить все", ToggleSubscriptionHandler.GetFormatedToggle(Subscribes.None)),
-        ]);
+        buttons.Add(CreateButtonRow(CreateCallbackButton("✅", "Включить все", ToggleSubscriptionHandler.GetFormatedToggle(Subscribes.All)),
+            CreateCallbackButton("❌", "Выключить все", ToggleSubscriptionHandler.GetFormatedToggle(Subscribes.None))));
 
-        buttons.Add([
-            InlineKeyboardButton.WithCallbackData("🔙 Назад", NavigationHandler.MenuBack),
-        ]);
+        buttons.Add(CreateButtonRow(CreateBackButton(NavigationHandler.MenuBack)));
 
         return new(buttons);
     }
@@ -34,25 +64,16 @@ public class KeyboardFactory(UserService userService)
 
         if (exists)
         {
-            buttons.Add([
-                InlineKeyboardButton.WithCallbackData("📌 Мой профиль", MeCommandHandler.Metadata.Command),
-                InlineKeyboardButton.WithCallbackData("🚪 Покинуть", LeaveCommandHandler.Metadata.Command),
-            ]);
+            buttons.Add(CreateButtonRow(CreateCallbackButton("📌", "Мой профиль", MeCommandHandler.Metadata.Command),
+                CreateCallbackButton("🚪", "Покинуть", LeaveCommandHandler.Metadata.Command)));
 
-            buttons.Add([
-                InlineKeyboardButton.WithCallbackData("🎚️ Управление подписками", SubscriptionsCommandHandler.Metadata.Command),
-                InlineKeyboardButton.WithCallbackData("❓ Помощь", HelpCommandHandler.Metadata.Command),
-            ]);
+            buttons.Add(CreateButtonRow(CreateCallbackButton("🎚️", "Управление подписками", SubscriptionsCommandHandler.Metadata.Command),
+                CreateCallbackButton("❓", "Помощь", HelpCommandHandler.Metadata.Command)));
         }
         else
         {
-            buttons.Add([
-                InlineKeyboardButton.WithCallbackData("🎯 Присоединиться", JoinCommandHandler.Metadata.Command),
-            ]);
-
-            buttons.Add([
-                InlineKeyboardButton.WithCallbackData("❓ Помощь", HelpCommandHandler.Metadata.Command),
-            ]);
+            buttons.Add(CreateButtonRow(CreateCallbackButton("🎯", "Присоединиться", JoinCommandHandler.Metadata.Command)));
+            buttons.Add(CreateButtonRow(CreateCallbackButton("❓", "Помощь", HelpCommandHandler.Metadata.Command)));
         }
 
         return new(buttons);
@@ -60,16 +81,12 @@ public class KeyboardFactory(UserService userService)
 
     public InlineKeyboardMarkup CreateForBroadcastConfirmation(string pendingId)
     {
-        List<InlineKeyboardButton[]> buttons = [];
-
-        buttons.Add([
-            InlineKeyboardButton.WithCallbackData("✅ Подтвердить рассылку", $"broadcast_confirm_{pendingId}"),
-            InlineKeyboardButton.WithCallbackData("❌ Отменить", $"broadcast_cancel_{pendingId}"),
-        ]);
-
-        buttons.Add([
-            InlineKeyboardButton.WithCallbackData("📋 Показать подписки", $"broadcast_show_subs_{pendingId}"),
-        ]);
+        List<InlineKeyboardButton[]> buttons =
+        [
+            CreateConfirmationRow("✅ Подтвердить рассылку", $"broadcast_confirm_{pendingId}",
+                "❌ Отменить", $"broadcast_cancel_{pendingId}"),
+            CreateButtonRow(CreateCallbackButton("📋", "Показать подписки", $"broadcast_show_subs_{pendingId}")),
+        ];
 
         return new(buttons);
     }
