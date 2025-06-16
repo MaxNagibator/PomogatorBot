@@ -8,10 +8,7 @@ public static class SubscriptionExtensions
     private static readonly Lazy<Dictionary<Subscribes, SubscriptionMeta>> CachedMetadata =
         new(InitializeMetadata, LazyThreadSafetyMode.ExecutionAndPublication);
 
-    public static Dictionary<Subscribes, SubscriptionMeta> GetSubscriptionMetadata()
-    {
-        return CachedMetadata.Value;
-    }
+    public static Dictionary<Subscribes, SubscriptionMeta> SubscriptionMetadata => CachedMetadata.Value;
 
     private static Dictionary<Subscribes, SubscriptionMeta> InitializeMetadata()
     {

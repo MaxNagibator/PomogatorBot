@@ -81,7 +81,7 @@ public class BroadcastConfirmationHandler(
             return "Всем пользователям";
         }
 
-        var metadata = SubscriptionExtensions.GetSubscriptionMetadata();
+        var metadata = SubscriptionExtensions.SubscriptionMetadata;
 
         var activeSubscriptions = metadata.Values
             .Where(x => x.Subscription != Subscribes.None

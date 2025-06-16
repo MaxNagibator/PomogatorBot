@@ -96,9 +96,9 @@ public class UserService(
         foreach (var user in users)
         {
             var messageText = message
-                .Replace("<first_name>", user.FirstName)
-                .Replace("<username>", user.Username)
-                .Replace("<alias>", string.IsNullOrEmpty(user.Alias) ? user.FirstName : user.Alias);
+                .Replace("<first_name>", user.FirstName, StringComparison.OrdinalIgnoreCase)
+                .Replace("<username>", user.Username, StringComparison.OrdinalIgnoreCase)
+                .Replace("<alias>", string.IsNullOrEmpty(user.Alias) ? user.FirstName : user.Alias, StringComparison.OrdinalIgnoreCase);
 
             try
             {
@@ -111,9 +111,9 @@ public class UserService(
 
                 successfulSends++;
             }
-            catch (ApiRequestException exception) when (exception.ErrorCode == 403 && exception.Message.Contains("bot was blocked by the user"))
+            catch (ApiRequestException exception) when (exception.ErrorCode == 403 && exception.Message.Contains("bot was blocked by the user", StringComparison.OrdinalIgnoreCase))
             {
-                logger.LogInformation("Пользователь {UserId} заблокировал бота. Удаляем учетную запись", user.UserId);
+                logger.LogInformation(exception, "Пользователь {UserId} заблокировал бота. Удаляем учетную запись", user.UserId);
                 await DeleteAsync(user.UserId, cancellationToken);
             }
             catch (Exception exception)

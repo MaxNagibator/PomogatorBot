@@ -8,7 +8,7 @@ public class KeyboardFactory(UserService userService)
 {
     public InlineKeyboardMarkup CreateForSubscriptions(Subscribes subscriptions)
     {
-        var buttons = SubscriptionExtensions.GetSubscriptionMetadata()
+        var buttons = SubscriptionExtensions.SubscriptionMetadata
             .Values
             .Where(x => x.Subscription is not Subscribes.None and not Subscribes.All)
             .Select(x => MakeSubscriptionButton(x, subscriptions))

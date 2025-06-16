@@ -3,7 +3,7 @@ using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Services;
 
-public class BroadcastPendingService : IDisposable
+public sealed class BroadcastPendingService : IDisposable
 {
     private readonly ConcurrentDictionary<string, PendingBroadcast> _pendingBroadcasts = new();
     private readonly Timer _cleanupTimer;

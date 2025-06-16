@@ -24,6 +24,30 @@
           "FluentValidation": "12.0.0"
         }
       },
+      "Microsoft.EntityFrameworkCore": {
+        "type": "Direct",
+        "requested": "[9.0.6, )",
+        "resolved": "9.0.6",
+        "contentHash": "r5hzM6Bhw4X3z28l5vmsaCPjk9VsQP4zaaY01THh1SAYjgTMVadYIvpNkCfmrv/Klks6aIf2A9eY7cpGZab/hg==",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Abstractions": "9.0.6",
+          "Microsoft.EntityFrameworkCore.Analyzers": "9.0.6",
+          "Microsoft.Extensions.Caching.Memory": "9.0.6",
+          "Microsoft.Extensions.Logging": "9.0.6"
+        }
+      },
+      "Microsoft.EntityFrameworkCore.Relational": {
+        "type": "Direct",
+        "requested": "[9.0.6, )",
+        "resolved": "9.0.6",
+        "contentHash": "Ht6OT17sYnO31Dx+hX72YHrc5kZt53g5napaw0FpyIekXCvb+gUVvufEG55Fa7taFm8ccy0Vzs+JVNR9NL0JlA==",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "9.0.6",
+          "Microsoft.Extensions.Caching.Memory": "9.0.6",
+          "Microsoft.Extensions.Configuration.Abstractions": "9.0.6",
+          "Microsoft.Extensions.Logging": "9.0.6"
+        }
+      },
       "Microsoft.EntityFrameworkCore.Tools": {
         "type": "Direct",
         "requested": "[9.0.6, )",
@@ -178,17 +202,6 @@
           "System.Text.Json": "7.0.3"
         }
       },
-      "Microsoft.EntityFrameworkCore": {
-        "type": "Transitive",
-        "resolved": "9.0.6",
-        "contentHash": "r5hzM6Bhw4X3z28l5vmsaCPjk9VsQP4zaaY01THh1SAYjgTMVadYIvpNkCfmrv/Klks6aIf2A9eY7cpGZab/hg==",
-        "dependencies": {
-          "Microsoft.EntityFrameworkCore.Abstractions": "9.0.6",
-          "Microsoft.EntityFrameworkCore.Analyzers": "9.0.6",
-          "Microsoft.Extensions.Caching.Memory": "9.0.6",
-          "Microsoft.Extensions.Logging": "9.0.6"
-        }
-      },
       "Microsoft.EntityFrameworkCore.Abstractions": {
         "type": "Transitive",
         "resolved": "9.0.6",
@@ -217,17 +230,6 @@
           "Microsoft.Extensions.Logging": "9.0.6",
           "Mono.TextTemplating": "3.0.0",
           "System.Text.Json": "9.0.6"
-        }
-      },
-      "Microsoft.EntityFrameworkCore.Relational": {
-        "type": "Transitive",
-        "resolved": "9.0.6",
-        "contentHash": "Ht6OT17sYnO31Dx+hX72YHrc5kZt53g5napaw0FpyIekXCvb+gUVvufEG55Fa7taFm8ccy0Vzs+JVNR9NL0JlA==",
-        "dependencies": {
-          "Microsoft.EntityFrameworkCore": "9.0.6",
-          "Microsoft.Extensions.Caching.Memory": "9.0.6",
-          "Microsoft.Extensions.Configuration.Abstractions": "9.0.6",
-          "Microsoft.Extensions.Logging": "9.0.6"
         }
       },
       "Microsoft.Extensions.Caching.Abstractions": {

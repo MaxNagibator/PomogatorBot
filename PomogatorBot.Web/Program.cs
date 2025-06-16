@@ -93,7 +93,7 @@ try
             try
             {
                 var dbContext = services.GetRequiredService<ApplicationDbContext>();
-                dbContext.Database.Migrate();
+                await dbContext.Database.MigrateAsync();
                 Log.Information("Промигрировано");
                 break;
             }
@@ -103,7 +103,7 @@ try
 
                 if (retryCount >= maxRetries)
                 {
-                    throw new($"migration fail after {retryCount} attempts", ex);
+                    throw new InvalidOperationException($"migration fail after {retryCount} attempts", ex);
                 }
 
                 Log.Warning(ex, "Migration attempt {RetryCount} failed, retrying in {Delay}s", retryCount, delay.TotalSeconds);
@@ -113,7 +113,7 @@ try
         }
     }
 
-    app.Run();
+    await app.RunAsync();
 }
 catch (Exception exception)
 {
@@ -121,5 +121,5 @@ catch (Exception exception)
 }
 finally
 {
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync();
 }

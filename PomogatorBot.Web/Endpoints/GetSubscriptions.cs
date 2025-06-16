@@ -4,8 +4,6 @@ namespace PomogatorBot.Web.Endpoints;
 
 public static class GetSubscriptions
 {
-    public record Response(IEnumerable<SubscriptionMeta> SubscriptionMetas);
-
     public class Endpoint : EndpointWithoutRequest<Response>
     {
         public override void Configure()
@@ -14,13 +12,15 @@ public static class GetSubscriptions
             AllowAnonymous();
         }
 
-        public override async Task HandleAsync(CancellationToken cancellationToken)
+        public override async Task HandleAsync(CancellationToken ct)
         {
-            var meta = SubscriptionExtensions.GetSubscriptionMetadata()
+            var meta = SubscriptionExtensions.SubscriptionMetadata
                 .Values
                 .Where(x => x.Subscription is not Subscribes.None and not Subscribes.All);
 
-            await SendOkAsync(new(meta), cancellationToken);
+            await SendOkAsync(new(meta), ct);
         }
     }
+
+    public record Response(IEnumerable<SubscriptionMeta> SubscriptionMetas);
 }

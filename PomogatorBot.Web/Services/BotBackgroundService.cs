@@ -174,8 +174,10 @@ public class BotBackgroundService(
                     entities: response.Entities,
                     cancellationToken: cancellationToken);
             }
-            catch (ApiRequestException exception) when (exception.Message.Contains("message is not modified"))
+            catch (ApiRequestException exception) when (exception.Message.Contains("message is not modified", StringComparison.OrdinalIgnoreCase))
             {
+                // Игнорируем ошибку "message is not modified" - это нормальное поведение
+                // когда пытаемся обновить сообщение с тем же содержимым
             }
         }
         else

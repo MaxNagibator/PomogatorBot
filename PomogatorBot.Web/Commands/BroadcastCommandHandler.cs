@@ -94,7 +94,7 @@ public class BroadcastCommandHandler(IConfiguration configuration, UserService u
 
     private static string GetHelpMessage()
     {
-        var subscribes = SubscriptionExtensions.GetSubscriptionMetadata()
+        var subscribes = SubscriptionExtensions.SubscriptionMetadata
             .Values
             .Where(x => x.Subscription != Subscribes.All)
             .Select(x => $"▫️ {x.Subscription}");
@@ -124,7 +124,7 @@ public class BroadcastCommandHandler(IConfiguration configuration, UserService u
     {
         if (args.StartsWith('[') == false || args.EndsWith(']') == false)
         {
-            throw new("not found [ or ]");
+            throw new ArgumentException("not found [ or ]");
         }
 
         var subscriptionParam = args.Trim('[', ']');
@@ -146,7 +146,7 @@ public class BroadcastCommandHandler(IConfiguration configuration, UserService u
             }
             else
             {
-                throw new(part + " not parsed");
+                throw new ArgumentException(part + " not parsed");
             }
         }
 
@@ -160,7 +160,7 @@ public class BroadcastCommandHandler(IConfiguration configuration, UserService u
             return "Всем пользователям";
         }
 
-        var metadata = SubscriptionExtensions.GetSubscriptionMetadata();
+        var metadata = SubscriptionExtensions.SubscriptionMetadata;
 
         var activeSubscriptions = metadata.Values
             .Where(x => x.Subscription != Subscribes.None
