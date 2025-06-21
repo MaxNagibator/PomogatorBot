@@ -2,6 +2,7 @@ using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using PomogatorBot.Web.CallbackQueries.Common;
 using PomogatorBot.Web.Commands.Common;
+using PomogatorBot.Web.Features.Keyboard;
 using PomogatorBot.Web.Infrastructure;
 using PomogatorBot.Web.Middlewares;
 using PomogatorBot.Web.Services;

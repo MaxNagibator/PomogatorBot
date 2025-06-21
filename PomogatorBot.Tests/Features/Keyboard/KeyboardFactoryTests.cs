@@ -1,7 +1,7 @@
-using PomogatorBot.Web.Services;
+using PomogatorBot.Web.Features.Keyboard;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace PomogatorBot.Tests.Services;
+namespace PomogatorBot.Tests.Features.Keyboard;
 
 [TestFixture]
 public class KeyboardFactoryTests
