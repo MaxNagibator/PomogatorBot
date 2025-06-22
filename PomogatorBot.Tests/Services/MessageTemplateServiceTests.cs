@@ -15,6 +15,15 @@ public class MessageTemplateServiceTests
 
     private MessageTemplateService _service;
 
+    /// <summary>
+    /// Метод ReplaceUserVariables корректно заменяет переменные пользователя в шаблоне сообщения.
+    /// </summary>
+    /// <remarks>
+    /// Проверяет замену переменной first_name на имя пользователя.<br />
+    /// Проверяет замену переменной username на логин пользователя.<br />
+    /// Проверяет замену переменной alias на псевдоним пользователя.<br />
+    /// Проверяет комбинированную замену нескольких переменных в одном сообщении.
+    /// </remarks>
     [TestCase("Привет, <first_name>!", "Иван", "ivan", "", "Привет, Иван!")]
     [TestCase("Пользователь <username> вошел в систему", "Иван", "ivan", "", "Пользователь ivan вошел в систему")]
     [TestCase("Добро пожаловать, <alias>!", "Иван", "ivan", "Админ", "Добро пожаловать, Админ!")]
@@ -37,6 +46,14 @@ public class MessageTemplateServiceTests
         Assert.That(result, Is.EqualTo(expected));
     }
 
+    /// <summary>
+    /// Метод ReplaceUserVariables использует имя пользователя как fallback для пустого псевдонима.
+    /// </summary>
+    /// <remarks>
+    /// Проверяет замену переменной alias на имя пользователя при пустом псевдониме.<br />
+    /// Проверяет замену переменной alias на имя пользователя при null псевдониме.<br />
+    /// Проверяет логику fallback для отсутствующих данных пользователя.
+    /// </remarks>
     [TestCase("")]
     [TestCase(null)]
     public void ReplaceUserVariablesWithEmptyAliasShouldFallbackToFirstName(string? alias)
@@ -58,6 +75,15 @@ public class MessageTemplateServiceTests
         Assert.That(result, Is.EqualTo("Добро пожаловать, Иван!"));
     }
 
+    /// <summary>
+    /// Метод ReplaceUserVariables нечувствителен к регистру переменных.
+    /// </summary>
+    /// <remarks>
+    /// Проверяет замену переменных в верхнем регистре.<br />
+    /// Проверяет замену переменных в нижнем регистре.<br />
+    /// Проверяет замену переменных в смешанном регистре.<br />
+    /// Проверяет корректность обработки различных вариантов написания переменных.
+    /// </remarks>
     [TestCase("Привет, <FIRST_NAME>! Логин: <Username>, псевдоним: <Alias>", "Привет, Иван! Логин: ivan, псевдоним: Админ")]
     [TestCase("Привет, <first_name>! Логин: <username>, псевдоним: <alias>", "Привет, Иван! Логин: ivan, псевдоним: Админ")]
     [TestCase("Привет, <First_Name>! Логин: <UserName>, псевдоним: <ALIAS>", "Привет, Иван! Логин: ivan, псевдоним: Админ")]
@@ -78,6 +104,14 @@ public class MessageTemplateServiceTests
         Assert.That(result, Is.EqualTo(expected));
     }
 
+    /// <summary>
+    /// Метод ReplacePreviewVariables заменяет переменные на предварительные данные для предпросмотра.
+    /// </summary>
+    /// <remarks>
+    /// Проверяет замену переменных на стандартные данные предпросмотра.<br />
+    /// Проверяет нечувствительность к регистру при замене переменных предпросмотра.<br />
+    /// Проверяет корректность формирования предварительного просмотра сообщений.
+    /// </remarks>
     [TestCase("Привет, <first_name>! Ваш логин: <username>, псевдоним: <alias>", "Привет, Иван! Ваш логин: @admin, псевдоним: Админ")]
     [TestCase("Привет, <FIRST_NAME>! Логин: <USERNAME>, псевдоним: <ALIAS>", "Привет, Иван! Логин: @admin, псевдоним: Админ")]
     [TestCase("Привет, <First_Name>! Логин: <UserName>, псевдоним: <Alias>", "Привет, Иван! Логин: @admin, псевдоним: Админ")]
@@ -90,6 +124,15 @@ public class MessageTemplateServiceTests
         Assert.That(result, Is.EqualTo(expected));
     }
 
+    /// <summary>
+    /// Метод ReplaceUserVariables возвращает исходное сообщение без изменений при отсутствии известных переменных.
+    /// </summary>
+    /// <remarks>
+    /// Проверяет обработку сообщений без переменных.<br />
+    /// Проверяет обработку пустых сообщений.<br />
+    /// Проверяет обработку сообщений с неизвестными переменными.<br />
+    /// Проверяет стабильность работы метода при различных входных данных.
+    /// </remarks>
     [TestCase("Обычное сообщение без переменных")]
     [TestCase("")]
     [TestCase("Сообщение с <неизвестной_переменной>")]
@@ -110,6 +153,15 @@ public class MessageTemplateServiceTests
         Assert.That(result, Is.EqualTo(message));
     }
 
+    /// <summary>
+    /// Метод ReplacePreviewVariables возвращает исходное сообщение без изменений при отсутствии известных переменных.
+    /// </summary>
+    /// <remarks>
+    /// Проверяет обработку сообщений без переменных в режиме предпросмотра.<br />
+    /// Проверяет обработку пустых сообщений в режиме предпросмотра.<br />
+    /// Проверяет обработку сообщений с неизвестными переменными в режиме предпросмотра.<br />
+    /// Проверяет стабильность работы метода предпросмотра при различных входных данных.
+    /// </remarks>
     [TestCase("Обычное сообщение без переменных")]
     [TestCase("")]
     [TestCase("Сообщение с <неизвестной_переменной>")]
@@ -122,6 +174,15 @@ public class MessageTemplateServiceTests
         Assert.That(result, Is.EqualTo(message));
     }
 
+    /// <summary>
+    /// Метод ReplaceUserVariables корректно обрабатывает сложные сценарии замены переменных.
+    /// </summary>
+    /// <remarks>
+    /// Проверяет многократное использование одной переменной в сообщении.<br />
+    /// Проверяет смешанное использование различных переменных.<br />
+    /// Проверяет размещение переменных в начале и конце сообщения.<br />
+    /// Проверяет комплексные сценарии замены с различными комбинациями данных пользователя.
+    /// </remarks>
     [TestCaseSource(nameof(ComplexUserVariableTestData))]
     public void ReplaceUserVariablesWithComplexScenariosShouldHandleCorrectly(UserVariableTestData testData)
     {

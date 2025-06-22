@@ -14,6 +14,14 @@ public class KeyboardBuilderTests
 
     private KeyboardBuilder _builder = null!;
 
+    /// <summary>
+    /// Метод Create возвращает новый экземпляр KeyboardBuilder.
+    /// </summary>
+    /// <remarks>
+    /// Проверяет, что метод Create возвращает не null объект.<br />
+    /// Проверяет, что возвращаемый объект является экземпляром KeyboardBuilder.<br />
+    /// Проверяет корректность создания строителя клавиатуры по умолчанию.
+    /// </remarks>
     [Test]
     public void CreateReturnsNewInstance()
     {
@@ -28,6 +36,14 @@ public class KeyboardBuilderTests
         }
     }
 
+    /// <summary>
+    /// Метод Create с параметрами использует пользовательские настройки.
+    /// </summary>
+    /// <remarks>
+    /// Проверяет, что метод Create принимает пользовательские опции.<br />
+    /// Проверяет, что возвращается валидный экземпляр строителя.<br />
+    /// Проверяет корректность создания строителя с настройками.
+    /// </remarks>
     [Test]
     public void CreateWithOptionsUsesCustomOptions()
     {
@@ -221,8 +237,8 @@ public class KeyboardBuilderTests
     /// Проверяет, что при ложном условии кнопка не добавляется.<br />
     /// Проверяет, что добавленная кнопка имеет правильный текст.
     /// </remarks>
-    /// <param name="condition">Условие для добавления кнопки</param>
-    /// <param name="shouldAddButton">Ожидается ли добавление кнопки</param>
+    /// <param name="condition">Логическое условие для определения необходимости добавления кнопки в клавиатуру</param>
+    /// <param name="shouldAddButton">Ожидаемый результат: true если кнопка должна быть добавлена, false если не должна</param>
     [TestCase(true, true)]
     [TestCase(false, false)]
     public void AddButtonIfAddsButtonBasedOnCondition(bool condition, bool shouldAddButton)
@@ -248,9 +264,9 @@ public class KeyboardBuilderTests
     /// Проверяет, что пустой текст кнопки вызывает ArgumentException.<br />
     /// Проверяет, что пустые callback данные вызывают ArgumentException.
     /// </remarks>
-    /// <param name="text">Текст кнопки для тестирования</param>
-    /// <param name="callbackData">Callback данные для тестирования</param>
-    /// <param name="expectedExceptionType">Ожидаемый тип исключения</param>
+    /// <param name="text">Текст кнопки для тестирования валидации входных данных</param>
+    /// <param name="callbackData">Callback данные кнопки для тестирования валидации входных данных</param>
+    /// <param name="expectedExceptionType">Ожидаемый тип исключения, которое должно быть выброшено при некорректных данных</param>
     [TestCase("", "callback", typeof(ArgumentException))]
     [TestCase("Text", "", typeof(ArgumentException))]
     public void AddButtonWithInvalidInputThrowsException(string text, string callbackData, Type expectedExceptionType)
