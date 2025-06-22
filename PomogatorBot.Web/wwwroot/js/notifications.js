@@ -25,15 +25,15 @@ function processNotificationQueue() {
     notification.innerHTML = `
         <div class="stats-header">✅ Успешно отправлено!</div>
         <div class="stats-row">
-            <span>Всего получателей:</span>
+            <span>👥 Всего получателей:</span>
             <strong>${data.totalUsers.toLocaleString()}</strong>
         </div>
         <div class="stats-row">
-            <span>Успешно:</span>
+            <span>✅ Успешно:</span>
             <strong>${data.successfulSends.toLocaleString()} (${successPercent}%)</strong>
         </div>
         <div class="stats-row">
-            <span>Не удалось:</span>
+            <span>❌ Не удалось:</span>
             <strong style="color: #ff6699">${data.failedSends.toLocaleString()}</strong>
         </div>
     `;

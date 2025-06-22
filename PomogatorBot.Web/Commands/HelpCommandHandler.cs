@@ -28,7 +28,7 @@ public class HelpCommandHandler(
 
         if (string.IsNullOrEmpty(helpText))
         {
-            helpText = "Нет доступных команд.";
+            helpText = "❌ Нет доступных команд.";
         }
 
         return Task.FromResult(new BotResponse(helpText));

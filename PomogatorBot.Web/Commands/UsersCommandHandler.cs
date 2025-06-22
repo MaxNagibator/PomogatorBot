@@ -19,7 +19,7 @@ public class UsersCommandHandler(
 
         if (users.Count == 0)
         {
-            return new("Нет зарегистрированных пользователей.");
+            return new("👥 Нет зарегистрированных пользователей.");
         }
 
         var userRows = users.Select(user =>
@@ -35,7 +35,7 @@ public class UsersCommandHandler(
 
                             {usersList}
 
-                            Используйте /{SetAliasCommandHandler.Metadata.Command} ID псевдоним для установки псевдонима
+                            💡 Используйте /{SetAliasCommandHandler.Metadata.Command} ID псевдоним для установки псевдонима
                             """;
 
         return new(responseText);

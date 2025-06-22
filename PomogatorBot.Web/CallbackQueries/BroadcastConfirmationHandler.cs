@@ -31,7 +31,7 @@ public class BroadcastConfirmationHandler(
         if (CallbackDataParser.TryParseWithMultiplePrefixes(callbackData, PrefixActions, out var action, out var pendingId) == false)
         {
             logger.LogWarning("Unknown broadcast callback action: {CallbackData}", callbackData);
-            return new("Неизвестное действие");
+            return new("❓ Неизвестное действие");
         }
 
         var pendingBroadcast = broadcastPendingService.GetPendingBroadcast(pendingId);
@@ -51,7 +51,7 @@ public class BroadcastConfirmationHandler(
         {
             "confirm" => await HandleConfirmBroadcast(pendingBroadcast, cancellationToken),
             "cancel" => HandleCancelBroadcast(pendingBroadcast),
-            _ => new("Неизвестное действие"),
+            _ => new("❓ Неизвестное действие"),
         };
     }
 

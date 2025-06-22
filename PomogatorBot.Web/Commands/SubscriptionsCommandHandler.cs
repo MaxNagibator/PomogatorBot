@@ -17,7 +17,7 @@ public class SubscriptionsCommandHandler(
 
     protected override Task<BotResponse> HandleUserCommandAsync(Message message, DatabaseUser user, CancellationToken cancellationToken)
     {
-        var response = new BotResponse("Управление подписками:", keyboardFactory.CreateForSubscriptions(user.Subscriptions));
+        var response = new BotResponse("🎚️ Управление подписками:", keyboardFactory.CreateForSubscriptions(user.Subscriptions));
         return Task.FromResult(response);
     }
 }

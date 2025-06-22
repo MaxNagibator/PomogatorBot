@@ -123,7 +123,7 @@ public class BroadcastCommandHandler(
     {
         if (args.StartsWith('[') == false || args.EndsWith(']') == false)
         {
-            throw new ArgumentException("not found [ or ]");
+            throw new ArgumentException("❌ Не найдены скобки [ или ]. Используйте формат: [подписки]");
         }
 
         var subscriptionParam = args.Trim('[', ']');
@@ -145,7 +145,7 @@ public class BroadcastCommandHandler(
             }
             else
             {
-                throw new ArgumentException(part + " not parsed");
+                throw new ArgumentException($"❌ Неизвестная подписка: '{part}'. Проверьте доступные подписки в справке.");
             }
         }
 
@@ -156,7 +156,7 @@ public class BroadcastCommandHandler(
     {
         if (subscribes == Subscribes.None)
         {
-            return "Всем пользователям";
+            return "👥 Всем пользователям";
         }
 
         var metadata = SubscriptionExtensions.SubscriptionMetadata;
@@ -170,7 +170,7 @@ public class BroadcastCommandHandler(
 
         return activeSubscriptions.Count > 0
             ? string.Join(", ", activeSubscriptions)
-            : "Всем пользователям";
+            : "👥 Всем пользователям";
     }
 
     private static MessageEntity[]? AdjustEntitiesForConfirmationMessage(MessageEntity[]? entities, int offset)

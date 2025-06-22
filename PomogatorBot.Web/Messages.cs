@@ -4,5 +4,5 @@ namespace PomogatorBot.Web;
 
 public static class Messages
 {
-    public static readonly string JoinBefore = $"Сначала зарегистрируйтесь через /{JoinCommandHandler.Metadata.Command}";
+    public static readonly string JoinBefore = $"🔐 Сначала зарегистрируйтесь через /{JoinCommandHandler.Metadata.Command}";
 }

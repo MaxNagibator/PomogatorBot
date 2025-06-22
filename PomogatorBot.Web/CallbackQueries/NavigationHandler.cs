@@ -21,9 +21,9 @@ public class NavigationHandler(UserService userService) : ICallbackQueryHandler
 
         var message = callbackQuery.Data switch
         {
-            MenuBack => user == null ? Messages.JoinBefore : "Главное меню:",
-            MenuMain => "Добро пожаловать в главное меню!",
-            _ => "Неподдерживаемая команда навигации",
+            MenuBack => user == null ? Messages.JoinBefore : "🏠 Главное меню:",
+            MenuMain => "🎉 Добро пожаловать в главное меню!",
+            _ => "❌ Неподдерживаемая команда навигации",
         };
 
         return new(message);

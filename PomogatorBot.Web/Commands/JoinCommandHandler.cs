@@ -20,14 +20,14 @@ public class JoinCommandHandler(
 
         if (user == null)
         {
-            return new("Ошибка идентификации пользователя");
+            return new("❌ Ошибка идентификации пользователя");
         }
 
         var existingUser = await userService.GetAsync(user.Id, cancellationToken);
 
         if (existingUser != null)
         {
-            return new("Вы уже зарегистрированы!");
+            return new("✅ Вы уже зарегистрированы!");
         }
 
         var newUser = new User

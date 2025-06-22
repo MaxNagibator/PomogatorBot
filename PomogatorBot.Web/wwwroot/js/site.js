@@ -27,7 +27,7 @@ async function sendMessage() {
             },
             body: JSON.stringify({
                 message: textarea.value,
-                subscribes: subscribes
+                subscribes
             })
         });
 
@@ -98,7 +98,7 @@ function updateHistory() {
             historyList.appendChild(item);
         });
     } else {
-        historyList.innerHTML = '<div class="empty-history">Нет обычных сообщений</div>';
+        historyList.innerHTML = '<div class="empty-history">📭 Нет обычных сообщений</div>';
     }
 }
 
@@ -123,7 +123,7 @@ function createMessageElement(msg, index) {
             <div class="message-preview">${safeText}</div>
             ${statsHTML}
             <div class="message-actions">
-                <div class="copy-notice">Скопировано!</div>
+                <div class="copy-notice">📋 Скопировано!</div>
                 <div class="delete-btn">
                     <button class="action-btn delete-action" data-index="${index}">🗑️</button>
                 </div>
@@ -167,7 +167,7 @@ function clearHistory() {
         messageHistory = [];
         localStorage.removeItem('messageHistory');
         updateHistory();
-        showNotification('История очищена, избранные сохранены', '#00bcd4');
+        showNotification('🧹 История очищена, избранные сохранены', '#00bcd4');
     }
 }
 

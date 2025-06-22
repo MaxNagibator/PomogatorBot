@@ -11,7 +11,7 @@ public static class MessageExtensions
 
         if (message.From?.Id == null)
         {
-            return new("Ошибка идентификации пользователя");
+            return new("❌ Ошибка идентификации пользователя");
         }
 
         userId = message.From.Id;
