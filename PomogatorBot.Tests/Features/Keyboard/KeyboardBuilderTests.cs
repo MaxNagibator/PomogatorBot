@@ -347,4 +347,173 @@ public class KeyboardBuilderTests
             Assert.That(_builder.ButtonCount, Is.Zero);
         }
     }
+
+    /// <summary>
+    /// Метод AddButton с эмодзи объединяет эмодзи и текст через пробел.
+    /// </summary>
+    /// <remarks>
+    /// Проверяет, что AddButton с эмодзи создает кнопку с объединенным текстом.<br />
+    /// Проверяет, что эмодзи и текст разделяются пробелом.<br />
+    /// Проверяет, что callback данные сохраняются без изменений.<br />
+    /// Проверяет корректность работы нового перегруженного метода AddButton.
+    /// </remarks>
+    /// <param name="emoji">Эмодзи для тестирования объединения с текстом</param>
+    /// <param name="text">Текст кнопки для тестирования объединения с эмодзи</param>
+    /// <param name="callbackData">Callback данные для проверки их сохранения</param>
+    /// <param name="expectedText">Ожидаемый объединенный текст кнопки</param>
+    [TestCase("🎯", "Цель", "target", "🎯 Цель")]
+    [TestCase("📊", "Статистика", "stats", "📊 Статистика")]
+    [TestCase("⚙️", "Настройки", "settings", "⚙️ Настройки")]
+    [TestCase("🏠", "Главная", "home", "🏠 Главная")]
+    public void AddButtonWithEmojiCombinesEmojiAndText(string emoji, string text, string callbackData, string expectedText)
+    {
+        // Act
+        var keyboard = _builder.AddButton(emoji, text, callbackData).Build();
+
+        // Assert
+        var button = keyboard.InlineKeyboard.First().First();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(button.Text, Is.EqualTo(expectedText));
+            Assert.That(button.CallbackData, Is.EqualTo(callbackData));
+        }
+    }
+
+    /// <summary>
+    /// Метод AddButton с пустым эмодзи использует только текст кнопки.
+    /// </summary>
+    /// <remarks>
+    /// Проверяет, что при пустом эмодзи используется только текст кнопки.<br />
+    /// Проверяет, что при null эмодзи используется только текст кнопки.<br />
+    /// Проверяет корректность обработки граничных случаев в новом перегруженном методе.<br />
+    /// Проверяет, что callback данные сохраняются без изменений.
+    /// </remarks>
+    /// <param name="emoji">Пустое значение эмодзи для тестирования граничных случаев</param>
+    /// <param name="text">Текст кнопки, который должен использоваться как есть</param>
+    /// <param name="callbackData">Callback данные для проверки их сохранения</param>
+    [TestCase("", "Только текст", "text_only")]
+    public void AddButtonWithEmptyEmojiUsesOnlyText(string emoji, string text, string callbackData)
+    {
+        // Act
+        var keyboard = _builder.AddButton(emoji, text, callbackData).Build();
+
+        // Assert
+        var button = keyboard.InlineKeyboard.First().First();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(button.Text, Is.EqualTo(text));
+            Assert.That(button.CallbackData, Is.EqualTo(callbackData));
+        }
+    }
+
+    /// <summary>
+    /// Метод AddButton с пробелами в эмодзи объединяет пробелы и текст.
+    /// </summary>
+    /// <remarks>
+    /// Проверяет, что пробелы в эмодзи не считаются пустыми и объединяются с текстом.<br />
+    /// Проверяет соответствие поведения с KeyboardFactory.CreateCallbackButton.<br />
+    /// Проверяет корректность обработки пробельных символов в эмодзи.
+    /// </remarks>
+    [Test]
+    public void AddButtonWithSpacesInEmojiCombinesSpacesAndText()
+    {
+        // Act
+        var keyboard = _builder.AddButton("   ", "Текст", "callback").Build();
+
+        // Assert
+        var button = keyboard.InlineKeyboard.First().First();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(button.Text, Is.EqualTo("    Текст")); // 3 пробела + 1 пробел + текст
+            Assert.That(button.CallbackData, Is.EqualTo("callback"));
+        }
+    }
+
+    /// <summary>
+    /// Метод AddButton с эмодзи поддерживает цепочку методов.
+    /// </summary>
+    /// <remarks>
+    /// Проверяет, что AddButton с эмодзи возвращает экземпляр KeyboardBuilder.<br />
+    /// Проверяет, что можно создать цепочку из нескольких кнопок с эмодзи.<br />
+    /// Проверяет корректность fluent API для нового перегруженного метода.<br />
+    /// Проверяет, что каждая кнопка создается как отдельная строка.
+    /// </remarks>
+    [Test]
+    public void AddButtonWithEmojiSupportsMethodChaining()
+    {
+        // Act
+        var keyboard = _builder
+            .AddButton("🎯", "Первая", "first")
+            .AddButton("📊", "Вторая", "second")
+            .AddButton("⚙️", "Третья", "third")
+            .Build();
+
+        // Assert
+        var rows = keyboard.InlineKeyboard.ToArray();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(rows, Has.Length.EqualTo(3));
+            Assert.That(rows[0].First().Text, Is.EqualTo("🎯 Первая"));
+            Assert.That(rows[1].First().Text, Is.EqualTo("📊 Вторая"));
+            Assert.That(rows[2].First().Text, Is.EqualTo("⚙️ Третья"));
+        }
+    }
+
+    /// <summary>
+    /// Метод AddButton с эмодзи применяет валидацию к объединенному тексту.
+    /// </summary>
+    /// <remarks>
+    /// Проверяет, что валидация применяется к итоговому тексту кнопки.<br />
+    /// Проверяет, что слишком длинный объединенный текст вызывает исключение.<br />
+    /// Проверяет корректность работы валидации в новом перегруженном методе.<br />
+    /// Проверяет, что пустые callback данные вызывают исключение.
+    /// </remarks>
+    [Test]
+    public void AddButtonWithEmojiValidatesCombinedText()
+    {
+        // Arrange
+        var longText = new string('A', 100); // Создаем очень длинный текст
+        var emoji = "🎯";
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => _builder.AddButton(emoji, longText, "callback"));
+        Assert.Throws<ArgumentException>(() => _builder.AddButton(emoji, "Text", ""));
+    }
+
+    /// <summary>
+    /// Метод AddButton с эмодзи совместим с другими методами KeyboardBuilder.
+    /// </summary>
+    /// <remarks>
+    /// Проверяет, что AddButton с эмодзи можно комбинировать с обычным AddButton.<br />
+    /// Проверяет, что AddButton с эмодзи можно комбинировать с AddButtonRow.<br />
+    /// Проверяет совместимость нового перегруженного метода с существующим API.<br />
+    /// Проверяет корректность создания смешанной клавиатуры.
+    /// </remarks>
+    [Test]
+    public void AddButtonWithEmojiIsCompatibleWithOtherMethods()
+    {
+        // Act
+        var keyboard = _builder
+            .AddButton("🏠", "Главная", "home")
+            .AddButton("Обычная кнопка", "normal")
+            .AddButtonRow(("Кнопка 1", "btn1"), ("Кнопка 2", "btn2"))
+            .AddButton("⚙️", "Настройки", "settings")
+            .Build();
+
+        // Assert
+        var rows = keyboard.InlineKeyboard.ToArray();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(rows, Has.Length.EqualTo(4));
+            Assert.That(rows[0].First().Text, Is.EqualTo("🏠 Главная"));
+            Assert.That(rows[1].First().Text, Is.EqualTo("Обычная кнопка"));
+            Assert.That(rows[2].ToArray(), Has.Length.EqualTo(2));
+            Assert.That(rows[3].First().Text, Is.EqualTo("⚙️ Настройки"));
+        }
+    }
 }

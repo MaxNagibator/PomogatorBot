@@ -74,6 +74,24 @@ public class KeyboardBuilder
     }
 
     /// <summary>
+    /// Добавляет одну callback-кнопку с эмодзи как новую строку
+    /// </summary>
+    /// <param name="emoji">Эмодзи для кнопки</param>
+    /// <param name="text">Текст кнопки</param>
+    /// <param name="callbackData">Данные callback</param>
+    /// <returns>Этот экземпляр KeyboardBuilder для цепочки методов</returns>
+    /// <remarks>
+    /// Эмодзи и текст объединяются через пробел. Если эмодзи пустое или null, используется только текст.<br />
+    /// Пример: AddButton("🎯", "Цель", "target") создаст кнопку с текстом "🎯 Цель".<br />
+    /// Метод следует тем же правилам валидации, что и стандартный AddButton.
+    /// </remarks>
+    public KeyboardBuilder AddButton(string emoji, string text, string callbackData)
+    {
+        var buttonText = string.IsNullOrEmpty(emoji) ? text : $"{emoji} {text}";
+        return AddButton(buttonText, callbackData);
+    }
+
+    /// <summary>
     /// Добавляет строку callback-кнопок
     /// </summary>
     /// <param name="buttons">Массив кортежей с текстом кнопки и данными callback</param>
@@ -257,6 +275,15 @@ public class KeyboardBuilder
     }
 
     /// <summary>
+    /// Инициирует режим сетки для создания клавиатуры в формате таблицы
+    /// </summary>
+    /// <returns>Экземпляр GridBuilder для создания сетки кнопок</returns>
+    public GridBuilder Grid()
+    {
+        return new(this, _options);
+    }
+
+    /// <summary>
     /// Очищает все кнопки и сбрасывает строитель
     /// </summary>
     /// <returns>Этот экземпляр KeyboardBuilder для цепочки методов</returns>
@@ -266,7 +293,16 @@ public class KeyboardBuilder
         return this;
     }
 
-    private void ValidateButtonText(string text)
+    /// <summary>
+    /// Проверяет текст кнопки на соответствие требованиям и ограничениям
+    /// </summary>
+    /// <param name="text">Текст кнопки для проверки</param>
+    /// <remarks>
+    /// Проверяет, что текст кнопки не пустой и его длина не превышает максимально допустимую.<br />
+    /// Если проверка не проходит, вызывается HandleValidationFailure с соответствующим сообщением.<br />
+    /// Проверка может быть отключена через настройки опций (ValidateButtonText = false).
+    /// </remarks>
+    public void ValidateButtonText(string text)
     {
         if (_options.ValidateButtonText == false)
         {
@@ -284,7 +320,16 @@ public class KeyboardBuilder
         }
     }
 
-    private void ValidateCallbackData(string callbackData)
+    /// <summary>
+    /// Проверяет данные callback на соответствие требованиям и ограничениям
+    /// </summary>
+    /// <param name="callbackData">Данные callback для проверки</param>
+    /// <remarks>
+    /// Проверяет, что данные callback не пустые и их размер в байтах не превышает максимально допустимый.<br />
+    /// Если проверка не проходит, вызывается HandleValidationFailure с соответствующим сообщением.<br />
+    /// Проверка может быть отключена через настройки опций (ValidateCallbackData = false).
+    /// </remarks>
+    public void ValidateCallbackData(string callbackData)
     {
         if (_options.ValidateCallbackData == false)
         {
@@ -302,7 +347,16 @@ public class KeyboardBuilder
         }
     }
 
-    private void ValidateUrl(string url)
+    /// <summary>
+    /// Проверяет URL на соответствие требованиям и формату
+    /// </summary>
+    /// <param name="url">URL для проверки</param>
+    /// <remarks>
+    /// Проверяет, что URL не пустой и соответствует формату абсолютного URI.<br />
+    /// Если проверка не проходит, вызывается HandleValidationFailure с соответствующим сообщением.<br />
+    /// Этот метод всегда выполняет проверку, независимо от настроек опций.
+    /// </remarks>
+    public void ValidateUrl(string url)
     {
         if (string.IsNullOrEmpty(url))
         {
@@ -315,11 +369,30 @@ public class KeyboardBuilder
         }
     }
 
-    private void HandleValidationFailure(string message)
+    /// <summary>
+    /// Обрабатывает ошибки валидации в соответствии с настройками
+    /// </summary>
+    /// <param name="message">Сообщение об ошибке</param>
+    /// <remarks>
+    /// Если в настройках опций включен режим выброса исключений (ThrowOnValidationFailure = true),<br />
+    /// метод выбрасывает ArgumentException с указанным сообщением.<br />
+    /// В противном случае ошибка игнорируется, что может привести к некорректному поведению клавиатуры.<br />
+    /// Рекомендуется включать режим выброса исключений во время разработки для выявления проблем.
+    /// </remarks>
+    public void HandleValidationFailure(string message)
     {
         if (_options.ThrowOnValidationFailure)
         {
             throw new ArgumentException(message);
         }
+    }
+
+    /// <summary>
+    /// Внутренний метод для добавления готовой строки кнопок
+    /// </summary>
+    /// <param name="buttonRow">Массив кнопок для добавления</param>
+    internal void AddButtonRowInternal(InlineKeyboardButton[] buttonRow)
+    {
+        _buttons.Add(buttonRow);
     }
 }

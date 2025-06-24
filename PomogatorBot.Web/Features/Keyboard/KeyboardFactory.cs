@@ -87,11 +87,13 @@ public class KeyboardFactory(UserService userService)
             builder.AddSubscriptionButton(meta, subscriptions);
         }
 
-        builder.AddButtonRow(($"{Emoji.Success} Включить все", ToggleSubscriptionHandler.GetFormatedToggle(Subscribes.All)),
-                ($"{Emoji.Error} Выключить все", ToggleSubscriptionHandler.GetFormatedToggle(Subscribes.None)))
-            .AddButton($"{Emoji.Back} Назад", NavigationHandler.MenuBack);
-
-        return builder.Build();
+        return builder
+            .Grid()
+            .AddButton(Emoji.Success, "Включить все", ToggleSubscriptionHandler.GetFormatedToggle(Subscribes.All))
+            .AddButton(Emoji.Error, "Выключить все", ToggleSubscriptionHandler.GetFormatedToggle(Subscribes.None))
+            .End()
+            .AddButton(Emoji.Back, "Назад", NavigationHandler.MenuBack)
+            .Build();
     }
 
     /// <summary>
@@ -102,24 +104,30 @@ public class KeyboardFactory(UserService userService)
     /// <returns>Приветственная клавиатура</returns>
     public async Task<InlineKeyboardMarkup> CreateForWelcome(long? userId = null, CancellationToken cancellationToken = default)
     {
-        var builder = KeyboardBuilder.Create();
         var exists = userId != null && await userService.ExistsAsync(userId.Value, cancellationToken);
+
+        var gridBuilder = KeyboardBuilder
+            .Create()
+            .Grid();
 
         if (exists)
         {
-            builder.AddButtonRow(($"{Emoji.Pin} Мой профиль", MeCommandHandler.Metadata.Command),
-                ($"{Emoji.Door} Покинуть", LeaveCommandHandler.Metadata.Command));
-
-            builder.AddButtonRow(($"{Emoji.Settings} Управление подписками", SubscriptionsCommandHandler.Metadata.Command),
-                ($"{Emoji.Question} Помощь", HelpCommandHandler.Metadata.Command));
+            gridBuilder
+                .AddButton(Emoji.Pin, "Мой профиль", MeCommandHandler.Metadata.Command)
+                .AddButton(Emoji.Door, "Покинуть", LeaveCommandHandler.Metadata.Command)
+                .End()
+                .AddButton(Emoji.Settings, "Управление подписками", SubscriptionsCommandHandler.Metadata.Command)
+                .AddButton(Emoji.Question, "Помощь", HelpCommandHandler.Metadata.Command);
         }
         else
         {
-            builder.AddButton($"{Emoji.Target} Присоединиться", JoinCommandHandler.Metadata.Command)
-                .AddButton($"{Emoji.Question} Помощь", HelpCommandHandler.Metadata.Command);
+            gridBuilder
+                .AddButton(Emoji.Target, "Присоединиться", JoinCommandHandler.Metadata.Command)
+                .End()
+                .AddButton(Emoji.Question, "Помощь", HelpCommandHandler.Metadata.Command);
         }
 
-        return builder.Build();
+        return gridBuilder.Build();
     }
 
     /// <summary>
@@ -129,11 +137,11 @@ public class KeyboardFactory(UserService userService)
     /// <returns>Клавиатура подтверждения рассылки</returns>
     public InlineKeyboardMarkup CreateForBroadcastConfirmation(string pendingId)
     {
-        var builder = KeyboardBuilder.Create();
-
-        builder.AddButtonRow(($"{Emoji.Success} Подтвердить рассылку", BroadcastConfirmationHandler.ConfirmPrefix + pendingId),
-            ($"{Emoji.Error} Отменить", BroadcastConfirmationHandler.CancelPrefix + pendingId));
-
-        return builder.Build();
+        return KeyboardBuilder
+            .Create()
+            .Grid()
+            .AddButton(Emoji.Success, "Подтвердить рассылку", BroadcastConfirmationHandler.ConfirmPrefix + pendingId)
+            .AddButton(Emoji.Error, "Отменить", BroadcastConfirmationHandler.CancelPrefix + pendingId)
+            .Build();
     }
 }
