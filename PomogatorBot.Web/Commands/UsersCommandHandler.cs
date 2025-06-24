@@ -1,13 +1,15 @@
+using Microsoft.Extensions.Options;
 using PomogatorBot.Web.Commands.Common;
+using PomogatorBot.Web.Configuration;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Commands;
 
 public class UsersCommandHandler(
-    IConfiguration configuration,
+    IOptions<AdminConfiguration> adminOptions,
     UserService userService)
-    : AdminRequiredCommandHandler(configuration), ICommandMetadata
+    : AdminRequiredCommandHandler(adminOptions), ICommandMetadata
 {
     public static CommandMetadata Metadata { get; } = new("users", "Показать список всех пользователей", true);
 
@@ -25,18 +27,20 @@ public class UsersCommandHandler(
         var userRows = users.Select(user =>
         {
             var aliasInfo = string.IsNullOrEmpty(user.Alias) ? string.Empty : $" | Псевдоним: {user.Alias}";
-            return $"👤 ID: {user.UserId} | @{user.Username} | {user.FirstName} {user.LastName}{aliasInfo}";
+            var fullName = $"{user.FirstName} {user.LastName ?? string.Empty}".Trim();
+            return $"👤 ID: {user.UserId} | @{user.Username} | {fullName}{aliasInfo}";
         });
 
         var usersList = string.Join("\n", userRows);
 
-        var responseText = $"""
-                            📋 Список пользователей ({users.Count}):
+        var responseText =
+            $"""
+             📋 Список пользователей ({users.Count}):
 
-                            {usersList}
+             {usersList}
 
-                            💡 Используйте /{SetAliasCommandHandler.Metadata.Command} ID псевдоним для установки псевдонима
-                            """;
+             💡 Используйте /{SetAliasCommandHandler.Metadata.Command} ID псевдоним для установки псевдонима
+             """;
 
         return new(responseText);
     }

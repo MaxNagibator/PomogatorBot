@@ -1,6 +1,7 @@
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using PomogatorBot.Web.Commands.Common;
 using PomogatorBot.Web.Common;
+using PomogatorBot.Web.Configuration;
 using Telegram.Bot.Types;
 
 namespace PomogatorBot.Tests.Commands.Common;
@@ -11,20 +12,14 @@ public class AdminRequiredCommandHandlerTests
     [SetUp]
     public void SetUp()
     {
-        var configurationBuilder = new ConfigurationBuilder();
+        var adminConfig = new AdminConfiguration { Username = "admin_user" };
+        _adminOptions = Options.Create(adminConfig);
 
-        configurationBuilder.AddInMemoryCollection(new Dictionary<string, string>
-        {
-            { "Admin:Username", "admin_user" },
-        }!);
-
-        _configuration = configurationBuilder.Build();
-
-        _handler = new(_configuration);
+        _handler = new(_adminOptions);
     }
 
     private TestAdminRequiredCommandHandler _handler;
-    private IConfiguration _configuration;
+    private IOptions<AdminConfiguration> _adminOptions;
 
     /// <summary>
     /// Метод HandleAsync корректно валидирует права администратора для различных имен пользователей.
@@ -157,10 +152,11 @@ public class AdminRequiredCommandHandlerTests
     public void ConstructorWithMissingAdminUsernameShouldThrowException()
     {
         // Arrange
-        var emptyConfiguration = new ConfigurationBuilder().Build();
+        var emptyAdminConfig = new AdminConfiguration { Username = null! };
+        var emptyAdminOptions = Options.Create(emptyAdminConfig);
 
         // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => _ = new TestAdminRequiredCommandHandler(emptyConfiguration));
+        var exception = Assert.Throws<InvalidOperationException>(() => _ = new TestAdminRequiredCommandHandler(emptyAdminOptions));
         Assert.That(exception.Message, Is.EqualTo("Имя пользователя администратора не настроено."));
     }
 
@@ -231,7 +227,7 @@ public class AdminRequiredCommandHandlerTests
     }
 }
 
-public class TestAdminRequiredCommandHandler(IConfiguration configuration) : AdminRequiredCommandHandler(configuration)
+public class TestAdminRequiredCommandHandler(IOptions<AdminConfiguration> adminOptions) : AdminRequiredCommandHandler(adminOptions)
 {
     public override string Command => "test";
     public bool HandleAdminCommandAsyncCalled { get; private set; }

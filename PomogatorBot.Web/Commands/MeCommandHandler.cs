@@ -1,4 +1,5 @@
 ﻿using PomogatorBot.Web.Commands.Common;
+using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
 using DatabaseUser = PomogatorBot.Web.Infrastructure.Entities.User;
@@ -13,15 +14,17 @@ public class MeCommandHandler(UserService userService) : UserRequiredCommandHand
 
     protected override Task<BotResponse> HandleUserCommandAsync(Message message, DatabaseUser user, CancellationToken cancellationToken)
     {
-        var response = new BotResponse($"""
-                                        📋 Ваш профиль:
-                                        ID: {user.UserId}
-                                        Username: @{user.Username}
-                                        Имя: {user.FirstName}
-                                        Фамилия: {user.LastName}
-                                        Дата регистрации: {user.CreatedAt:dd.MM.yyyy}
-                                        """);
+        var responseText =
+            $"""
+             {Emoji.List} Ваш профиль:
+             ID: {user.UserId}
+             Username: @{user.Username}
+             Имя: {user.FirstName}
+             Фамилия: {user.LastName ?? "Не указана"}
+             Дата регистрации: {user.CreatedAt:dd.MM.yyyy}
+             """;
 
+        var response = new BotResponse(responseText);
         return Task.FromResult(response);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using PomogatorBot.Web.Commands.Common;
+using PomogatorBot.Web.Constants;
 using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Commands;
@@ -13,8 +14,8 @@ public class StartCommandHandler : IBotCommandHandler, ICommandMetadata
     {
         var response =
             $"""
-             👋 Добро пожаловать! Я ваш помощник.
-             🚀 Чтобы начать:
+             {Emoji.Wave} Добро пожаловать! Я ваш помощник.
+             {Emoji.Rocket} Чтобы начать:
              1. Используйте /{JoinCommandHandler.Metadata.Command} для регистрации
              2. Посмотрите /{HelpCommandHandler.Metadata.Command} для списка команд
              3. Используйте /{MeCommandHandler.Metadata.Command} для вашего профиля

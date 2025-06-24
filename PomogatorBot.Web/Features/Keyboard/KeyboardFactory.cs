@@ -1,5 +1,6 @@
 ﻿using PomogatorBot.Web.CallbackQueries;
 using PomogatorBot.Web.Commands;
+using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -65,7 +66,7 @@ public class KeyboardFactory(UserService userService)
     /// <returns>Кнопка "Назад"</returns>
     public static InlineKeyboardButton CreateBackButton(string callbackData)
     {
-        return InlineKeyboardButton.WithCallbackData("🔙 Назад", callbackData);
+        return InlineKeyboardButton.WithCallbackData($"{Emoji.Back} Назад", callbackData);
     }
 
     /// <summary>
@@ -86,9 +87,9 @@ public class KeyboardFactory(UserService userService)
             builder.AddSubscriptionButton(meta, subscriptions);
         }
 
-        builder.AddButtonRow(("✅ Включить все", ToggleSubscriptionHandler.GetFormatedToggle(Subscribes.All)),
-                ("❌ Выключить все", ToggleSubscriptionHandler.GetFormatedToggle(Subscribes.None)))
-            .AddButton("🔙 Назад", NavigationHandler.MenuBack);
+        builder.AddButtonRow(($"{Emoji.Success} Включить все", ToggleSubscriptionHandler.GetFormatedToggle(Subscribes.All)),
+                ($"{Emoji.Error} Выключить все", ToggleSubscriptionHandler.GetFormatedToggle(Subscribes.None)))
+            .AddButton($"{Emoji.Back} Назад", NavigationHandler.MenuBack);
 
         return builder.Build();
     }
@@ -106,16 +107,16 @@ public class KeyboardFactory(UserService userService)
 
         if (exists)
         {
-            builder.AddButtonRow(("📌 Мой профиль", MeCommandHandler.Metadata.Command),
-                ("🚪 Покинуть", LeaveCommandHandler.Metadata.Command));
+            builder.AddButtonRow(($"{Emoji.Pin} Мой профиль", MeCommandHandler.Metadata.Command),
+                ($"{Emoji.Door} Покинуть", LeaveCommandHandler.Metadata.Command));
 
-            builder.AddButtonRow(("🎚️ Управление подписками", SubscriptionsCommandHandler.Metadata.Command),
-                ("❓ Помощь", HelpCommandHandler.Metadata.Command));
+            builder.AddButtonRow(($"{Emoji.Settings} Управление подписками", SubscriptionsCommandHandler.Metadata.Command),
+                ($"{Emoji.Question} Помощь", HelpCommandHandler.Metadata.Command));
         }
         else
         {
-            builder.AddButton("🎯 Присоединиться", JoinCommandHandler.Metadata.Command)
-                .AddButton("❓ Помощь", HelpCommandHandler.Metadata.Command);
+            builder.AddButton($"{Emoji.Target} Присоединиться", JoinCommandHandler.Metadata.Command)
+                .AddButton($"{Emoji.Question} Помощь", HelpCommandHandler.Metadata.Command);
         }
 
         return builder.Build();
@@ -130,8 +131,8 @@ public class KeyboardFactory(UserService userService)
     {
         var builder = KeyboardBuilder.Create();
 
-        builder.AddButtonRow(("✅ Подтвердить рассылку", BroadcastConfirmationHandler.ConfirmPrefix + pendingId),
-            ("❌ Отменить", BroadcastConfirmationHandler.CancelPrefix + pendingId));
+        builder.AddButtonRow(($"{Emoji.Success} Подтвердить рассылку", BroadcastConfirmationHandler.ConfirmPrefix + pendingId),
+            ($"{Emoji.Error} Отменить", BroadcastConfirmationHandler.CancelPrefix + pendingId));
 
         return builder.Build();
     }

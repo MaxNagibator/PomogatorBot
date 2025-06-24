@@ -1,3 +1,4 @@
+using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Infrastructure.Entities;
 using PomogatorBot.Web.Services;
 
@@ -24,10 +25,10 @@ public class MessageTemplateServiceTests
     /// Проверяет замену переменной alias на псевдоним пользователя.<br />
     /// Проверяет комбинированную замену нескольких переменных в одном сообщении.
     /// </remarks>
-    [TestCase("Привет, <first_name>!", "Иван", "ivan", "", "Привет, Иван!")]
-    [TestCase("Пользователь <username> вошел в систему", "Иван", "ivan", "", "Пользователь ivan вошел в систему")]
-    [TestCase("Добро пожаловать, <alias>!", "Иван", "ivan", "Админ", "Добро пожаловать, Админ!")]
-    [TestCase("Привет, <first_name>! Ваш логин: <username>, псевдоним: <alias>", "Иван", "ivan", "Админ", "Привет, Иван! Ваш логин: ivan, псевдоним: Админ")]
+    [TestCase($"Привет, {TemplateVariables.User.FirstName}!", "Иван", "ivan", "", "Привет, Иван!")]
+    [TestCase($"Пользователь {TemplateVariables.User.Username} вошел в систему", "Иван", "ivan", "", "Пользователь ivan вошел в систему")]
+    [TestCase($"Добро пожаловать, {TemplateVariables.User.Alias}!", "Иван", "ivan", "Админ", "Добро пожаловать, Админ!")]
+    [TestCase($"Привет, {TemplateVariables.User.FirstName}! Ваш логин: {TemplateVariables.User.Username}, псевдоним: {TemplateVariables.User.Alias}", "Иван", "ivan", "Админ", "Привет, Иван! Ваш логин: ivan, псевдоним: Админ")]
     [Category("UserVariableReplacement")]
     public void ReplaceUserVariablesWithValidUserDataShouldReplaceCorrectly(string message, string firstName, string username, string alias, string expected)
     {
@@ -59,7 +60,7 @@ public class MessageTemplateServiceTests
     public void ReplaceUserVariablesWithEmptyAliasShouldFallbackToFirstName(string? alias)
     {
         // Arrange
-        var message = "Добро пожаловать, <alias>!";
+        var message = $"Добро пожаловать, {TemplateVariables.User.Alias}!";
 
         var user = new User
         {
@@ -85,7 +86,7 @@ public class MessageTemplateServiceTests
     /// Проверяет корректность обработки различных вариантов написания переменных.
     /// </remarks>
     [TestCase("Привет, <FIRST_NAME>! Логин: <Username>, псевдоним: <Alias>", "Привет, Иван! Логин: ivan, псевдоним: Админ")]
-    [TestCase("Привет, <first_name>! Логин: <username>, псевдоним: <alias>", "Привет, Иван! Логин: ivan, псевдоним: Админ")]
+    [TestCase($"Привет, {TemplateVariables.User.FirstName}! Логин: {TemplateVariables.User.Username}, псевдоним: {TemplateVariables.User.Alias}", "Привет, Иван! Логин: ivan, псевдоним: Админ")]
     [TestCase("Привет, <First_Name>! Логин: <UserName>, псевдоним: <ALIAS>", "Привет, Иван! Логин: ivan, псевдоним: Админ")]
     public void ReplaceUserVariablesWithDifferentCasingShouldBeCaseInsensitive(string message, string expected)
     {
@@ -112,7 +113,7 @@ public class MessageTemplateServiceTests
     /// Проверяет нечувствительность к регистру при замене переменных предпросмотра.<br />
     /// Проверяет корректность формирования предварительного просмотра сообщений.
     /// </remarks>
-    [TestCase("Привет, <first_name>! Ваш логин: <username>, псевдоним: <alias>", "Привет, Иван! Ваш логин: @admin, псевдоним: Админ")]
+    [TestCase($"Привет, {TemplateVariables.User.FirstName}! Ваш логин: {TemplateVariables.User.Username}, псевдоним: {TemplateVariables.User.Alias}", "Привет, Иван! Ваш логин: @admin, псевдоним: Админ")]
     [TestCase("Привет, <FIRST_NAME>! Логин: <USERNAME>, псевдоним: <ALIAS>", "Привет, Иван! Логин: @admin, псевдоним: Админ")]
     [TestCase("Привет, <First_Name>! Логин: <UserName>, псевдоним: <Alias>", "Привет, Иван! Логин: @admin, псевдоним: Админ")]
     public void ReplacePreviewVariablesWithVariousMessagesShouldReplaceWithPreviewData(string message, string expected)
@@ -197,7 +198,7 @@ public class MessageTemplateServiceTests
     {
         yield return new()
         {
-            Message = "Многократное использование: <first_name>, <first_name>, <first_name>",
+            Message = $"Многократное использование: {TemplateVariables.User.FirstName}, {TemplateVariables.User.FirstName}, {TemplateVariables.User.FirstName}",
             User = new()
             {
                 FirstName = "Тест",
@@ -209,7 +210,7 @@ public class MessageTemplateServiceTests
 
         yield return new()
         {
-            Message = "Смешанные переменные: <alias> (<first_name>) - @<username>",
+            Message = $"Смешанные переменные: {TemplateVariables.User.Alias} ({TemplateVariables.User.FirstName}) - @{TemplateVariables.User.Username}",
             User = new()
             {
                 FirstName = "Иван",
@@ -221,7 +222,7 @@ public class MessageTemplateServiceTests
 
         yield return new()
         {
-            Message = "Переменные в начале <first_name> и в конце <username>",
+            Message = $"Переменные в начале {TemplateVariables.User.FirstName} и в конце {TemplateVariables.User.Username}",
             User = new()
             {
                 FirstName = "Анна",

@@ -1,15 +1,28 @@
+using Microsoft.Extensions.Options;
 using PomogatorBot.Web.Commands.Common;
+using PomogatorBot.Web.Configuration;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Commands;
 
 public class SetAliasCommandHandler(
-    IConfiguration configuration,
+    IOptions<AdminConfiguration> adminOptions,
     UserService userService,
     ILogger<SetAliasCommandHandler> logger)
-    : AdminRequiredCommandHandler(configuration), ICommandMetadata
+    : AdminRequiredCommandHandler(adminOptions), ICommandMetadata
 {
+    private const string HelpMessage =
+        """
+        🏷️ Справка по команде установки псевдонима:
+
+        Использование:
+        /setalias ID_пользователя псевдоним
+
+        📝 Пример:
+        /setalias 123456789 Василий
+        """;
+
     public static CommandMetadata Metadata { get; } = new("setalias", "Установить псевдоним для пользователя", true);
 
     public override string Command => Metadata.Command;
@@ -20,14 +33,14 @@ public class SetAliasCommandHandler(
 
         if (message.Text?.Length <= length)
         {
-            return new(GetHelpMessage(), new());
+            return new(HelpMessage, new());
         }
 
         var messageText = message.Text?[length..]?.Trim();
 
         if (string.IsNullOrEmpty(messageText))
         {
-            return new(GetHelpMessage(), new());
+            return new(HelpMessage, new());
         }
 
         var parts = messageText.Split(' ', 2);
@@ -58,20 +71,5 @@ public class SetAliasCommandHandler(
 
         logger.LogInformation("Установлен псевдоним для пользователя {UserId}: {Alias}", userId, alias);
         return new($"✅ Псевдоним '{alias}' успешно установлен для пользователя {userId}.", new());
-    }
-
-    private static string GetHelpMessage()
-    {
-        const string Message = """
-                               🏷️ Справка по команде установки псевдонима:
-
-                               Использование:
-                               /setalias ID_пользователя псевдоним
-
-                               📝 Пример:
-                               /setalias 123456789 Василий
-                               """;
-
-        return Message;
     }
 }

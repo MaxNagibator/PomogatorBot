@@ -1,12 +1,15 @@
-﻿using PomogatorBot.Web.Commands.Common;
+﻿using Microsoft.Extensions.Options;
+using PomogatorBot.Web.Commands.Common;
+using PomogatorBot.Web.Configuration;
+using PomogatorBot.Web.Constants;
 using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Commands;
 
 public class HelpCommandHandler(
-    IConfiguration configuration,
+    IOptions<AdminConfiguration> adminOptions,
     IEnumerable<CommandMetadata> commands)
-    : AdminCommandHandler(configuration), ICommandMetadata
+    : AdminCommandHandler(adminOptions), ICommandMetadata
 {
     private readonly IEnumerable<CommandMetadata> _commands = commands
         .Where(x => string.IsNullOrEmpty(x.Description) == false)
@@ -28,7 +31,7 @@ public class HelpCommandHandler(
 
         if (string.IsNullOrEmpty(helpText))
         {
-            helpText = "❌ Нет доступных команд.";
+            helpText = $"{Emoji.Error} Нет доступных команд.";
         }
 
         return Task.FromResult(new BotResponse(helpText));

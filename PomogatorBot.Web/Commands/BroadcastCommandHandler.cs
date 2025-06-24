@@ -1,4 +1,7 @@
-﻿using PomogatorBot.Web.Commands.Common;
+﻿using Microsoft.Extensions.Options;
+using PomogatorBot.Web.Commands.Common;
+using PomogatorBot.Web.Configuration;
+using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Features.Keyboard;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
@@ -7,12 +10,12 @@ using Telegram.Bot.Types.Enums;
 namespace PomogatorBot.Web.Commands;
 
 public class BroadcastCommandHandler(
-    IConfiguration configuration,
+    IOptions<AdminConfiguration> adminOptions,
     UserService userService,
     KeyboardFactory keyboardFactory,
     BroadcastPendingService broadcastPendingService,
     MessagePreviewService messagePreviewService)
-    : AdminRequiredCommandHandler(configuration), ICommandMetadata
+    : AdminRequiredCommandHandler(adminOptions), ICommandMetadata
 {
     public static CommandMetadata Metadata { get; } = new("b", "Возвестить пастве", true);
 
@@ -108,9 +111,9 @@ public class BroadcastCommandHandler(
                        {string.Join(Environment.NewLine, subscribes)}
 
                        Доступные теги:
-                       <first_name> - имя пользователя
-                       <username> - ник пользователя
-                       <alias> - псевдоним пользователя (если нет, то имя)
+                       {TemplateVariables.User.FirstName} - имя пользователя
+                       {TemplateVariables.User.Username}- ник пользователя
+                       {TemplateVariables.User.Alias} - псевдоним пользователя (если нет, то имя)
 
                        ❗При {Subscribes.None} отправится всем пользователям
                        ❗При отсутствии подписок отправится всем пользователям

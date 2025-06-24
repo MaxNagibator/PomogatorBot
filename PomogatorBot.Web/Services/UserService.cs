@@ -121,9 +121,9 @@ public class UserService(
 
                 successfulSends++;
             }
-            catch (ApiRequestException exception) when (exception.ErrorCode == 403 && exception.Message.Contains("bot was blocked by the user", StringComparison.OrdinalIgnoreCase))
+            catch (ApiRequestException exception) when (exception.ErrorCode == 403)
             {
-                logger.LogInformation(exception, "Пользователь {UserId} заблокировал бота. Удаляем учетную запись", user.UserId);
+                logger.LogInformation(exception, "Пользователь {UserId} заблокировал бота (ErrorCode: 403). Удаляем учетную запись", user.UserId);
                 await DeleteAsync(user.UserId, cancellationToken);
             }
             catch (Exception exception)

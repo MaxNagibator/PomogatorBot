@@ -1,3 +1,4 @@
+using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Features.Keyboard;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -18,7 +19,7 @@ public class KeyboardFactoryTests
     public void CreateCallbackButtonWithIconAndTextShouldCreateCorrectButton()
     {
         // Arrange
-        const string Icon = "📌";
+        const string Icon = Emoji.Pin;
         const string Text = "Мой профиль";
         const string CallbackData = "me";
 
@@ -28,7 +29,7 @@ public class KeyboardFactoryTests
         // Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(button.Text, Is.EqualTo("📌 Мой профиль"));
+            Assert.That(button.Text, Is.EqualTo($"{Emoji.Pin} Мой профиль"));
             Assert.That(button.CallbackData, Is.EqualTo("me"));
         }
     }
@@ -122,9 +123,9 @@ public class KeyboardFactoryTests
     public void CreateConfirmationRowWithConfirmAndCancelShouldCreateCorrectRow()
     {
         // Arrange
-        const string ConfirmText = "✅ Подтвердить";
+        const string ConfirmText = $"{Emoji.Success} Подтвердить";
         const string ConfirmCallback = "confirm_123";
-        const string CancelText = "❌ Отменить";
+        const string CancelText = $"{Emoji.Error} Отменить";
         const string CancelCallback = "cancel_123";
 
         // Act
@@ -135,9 +136,9 @@ public class KeyboardFactoryTests
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(row[0].Text, Is.EqualTo("✅ Подтвердить"));
+            Assert.That(row[0].Text, Is.EqualTo($"{Emoji.Success} Подтвердить"));
             Assert.That(row[0].CallbackData, Is.EqualTo("confirm_123"));
-            Assert.That(row[1].Text, Is.EqualTo("❌ Отменить"));
+            Assert.That(row[1].Text, Is.EqualTo($"{Emoji.Error} Отменить"));
             Assert.That(row[1].CallbackData, Is.EqualTo("cancel_123"));
         }
     }
@@ -162,7 +163,7 @@ public class KeyboardFactoryTests
         // Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(button.Text, Is.EqualTo("🔙 Назад"));
+            Assert.That(button.Text, Is.EqualTo($"{Emoji.Back} Назад"));
             Assert.That(button.CallbackData, Is.EqualTo("menu_back"));
         }
     }
@@ -181,8 +182,8 @@ public class KeyboardFactoryTests
     /// <param name="callbackData">Callback данные кнопки для тестирования обработки пустых значений</param>
     [Test]
     [TestCase("", "text", "callback")]
-    [TestCase("🎯", "", "callback")]
-    [TestCase("🎯", "text", "")]
+    [TestCase(Emoji.Target, "", "callback")]
+    [TestCase(Emoji.Target, "text", "")]
     public void CreateCallbackButtonWithEmptyParametersShouldHandleGracefully(string icon, string text, string callbackData)
     {
         // Act & Assert

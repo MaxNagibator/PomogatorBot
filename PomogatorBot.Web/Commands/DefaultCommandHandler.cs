@@ -1,4 +1,5 @@
 ﻿using PomogatorBot.Web.Commands.Common;
+using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
 
@@ -20,7 +21,7 @@ public class DefaultCommandHandler(UserService userService) : IBotCommandHandler
         var exists = await userService.ExistsAsync(userId, cancellationToken);
 
         return exists
-            ? new($"❓ Не понимаю команду. Используйте /{HelpCommandHandler.Metadata.Command} для списка команд")
-            : new BotResponse($"🚀 Для начала работы выполните /{JoinCommandHandler.Metadata.Command}");
+            ? new($"{Emoji.Question} Не понимаю команду. Используйте /{HelpCommandHandler.Metadata.Command} для списка команд")
+            : new BotResponse($"{Emoji.Rocket} Для начала работы выполните /{JoinCommandHandler.Metadata.Command}");
     }
 }

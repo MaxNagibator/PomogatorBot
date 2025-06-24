@@ -1,9 +1,11 @@
-﻿using Telegram.Bot.Types;
+﻿using Microsoft.Extensions.Options;
+using PomogatorBot.Web.Configuration;
+using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Commands.Common;
 
-public abstract class AdminRequiredCommandHandler(IConfiguration configuration)
-    : AdminCommandHandler(configuration), IBotCommandHandler
+public abstract class AdminRequiredCommandHandler(IOptions<AdminConfiguration> adminOptions)
+    : AdminCommandHandler(adminOptions), IBotCommandHandler
 {
     public sealed override async Task<BotResponse> HandleAsync(Message message, CancellationToken cancellationToken)
     {

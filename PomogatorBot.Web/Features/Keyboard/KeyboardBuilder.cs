@@ -1,4 +1,5 @@
 using PomogatorBot.Web.CallbackQueries;
+using PomogatorBot.Web.Constants;
 using System.Text;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -106,7 +107,7 @@ public class KeyboardBuilder
     public KeyboardBuilder AddSubscriptionButton(SubscriptionMeta meta, Subscribes current)
     {
         var isActive = current.HasFlag(meta.Subscription);
-        var buttonText = $"{meta.Icon} {meta.DisplayName} {(isActive ? "✅" : "❌")}";
+        var buttonText = $"{meta.Icon} {meta.DisplayName} {(isActive ? Emoji.Success : Emoji.Error)}";
         AddButton(buttonText, ToggleSubscriptionHandler.GetFormatedToggle(meta.Subscription));
         return this;
     }
@@ -308,7 +309,7 @@ public class KeyboardBuilder
             HandleValidationFailure("URL не может быть null или пустым");
         }
 
-        if (Uri.IsWellFormedUriString(url, UriKind.Absolute)==false)
+        if (Uri.IsWellFormedUriString(url, UriKind.Absolute) == false)
         {
             HandleValidationFailure("Неверный формат URL");
         }

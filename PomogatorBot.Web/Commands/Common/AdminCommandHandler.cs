@@ -1,10 +1,12 @@
-﻿using Telegram.Bot.Types;
+﻿using Microsoft.Extensions.Options;
+using PomogatorBot.Web.Configuration;
+using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Commands.Common;
 
-public abstract class AdminCommandHandler(IConfiguration configuration) : IBotCommandHandler
+public abstract class AdminCommandHandler(IOptions<AdminConfiguration> adminOptions) : IBotCommandHandler
 {
-    private readonly string _adminUsername = configuration["Admin:Username"]
+    private readonly string _adminUsername = adminOptions.Value.Username
                                              ?? throw new InvalidOperationException("Имя пользователя администратора не настроено.");
 
     public abstract string Command { get; }

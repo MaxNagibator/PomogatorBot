@@ -1,4 +1,5 @@
 ﻿using PomogatorBot.Web.CallbackQueries.Common;
+using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
 
@@ -21,9 +22,9 @@ public class NavigationHandler(UserService userService) : ICallbackQueryHandler
 
         var message = callbackQuery.Data switch
         {
-            MenuBack => user == null ? Messages.JoinBefore : "🏠 Главное меню:",
-            MenuMain => "🎉 Добро пожаловать в главное меню!",
-            _ => "❌ Неподдерживаемая команда навигации",
+            MenuBack => user == null ? Messages.JoinBefore : $"{Emoji.Home} Главное меню:",
+            MenuMain => $"{Emoji.Party} Добро пожаловать в главное меню!",
+            _ => $"{Emoji.Error} Неподдерживаемая команда навигации",
         };
 
         return new(message);
