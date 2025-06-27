@@ -1,4 +1,5 @@
 ﻿using PomogatorBot.Web.CallbackQueries.Common;
+using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
 using DatabaseUser = PomogatorBot.Web.Infrastructure.Entities.User;
@@ -27,13 +28,13 @@ public class ToggleSubscriptionHandler(
         if (CallbackDataParser.TryParseWithPrefix(callbackQuery.Data!, TogglePrefix, out var subscriptionName) == false)
         {
             logger.LogWarning("Invalid callback data format: {CallbackData}", callbackQuery.Data);
-            return new("❌ Неверный формат данных");
+            return new($"{Emoji.Error} Неверный формат данных");
         }
 
         if (Enum.TryParse<Subscribes>(subscriptionName, out var subscription) == false)
         {
             logger.LogWarning("Unknown subscription: {Subscription}", subscriptionName);
-            return new("❓ Неизвестный тип подписки");
+            return new($"{Emoji.Question} Неизвестный тип подписки");
         }
 
         user.Subscriptions = subscription switch

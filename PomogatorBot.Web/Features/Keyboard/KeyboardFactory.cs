@@ -144,4 +144,17 @@ public class KeyboardFactory(UserService userService)
             .AddButton(Emoji.Error, "Отменить", BroadcastConfirmationHandler.CancelPrefix + pendingId)
             .Build();
     }
+
+    public InlineKeyboardMarkup CreateForLastMessages()
+    {
+        return KeyboardBuilder
+            .Create()
+            .Grid()
+            .AddButton(Emoji.History, "Последние 5", LastMessagesCallbackHandler.ShowPrefix + "5")
+            .AddButton(Emoji.History, "Последние 10", LastMessagesCallbackHandler.ShowPrefix + "10")
+            .End()
+            .AddButton(Emoji.History, "Последние 20", LastMessagesCallbackHandler.ShowPrefix + "20")
+            .AddButton(Emoji.Refresh, "Обновить", LastMessagesCallbackHandler.RefreshAction)
+            .Build();
+    }
 }

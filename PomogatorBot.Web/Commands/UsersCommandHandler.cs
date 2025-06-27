@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using PomogatorBot.Web.Commands.Common;
 using PomogatorBot.Web.Configuration;
+using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
 
@@ -21,25 +22,25 @@ public class UsersCommandHandler(
 
         if (users.Count == 0)
         {
-            return new("👥 Нет зарегистрированных пользователей.");
+            return new($"{Emoji.Users} Нет зарегистрированных пользователей.");
         }
 
         var userRows = users.Select(user =>
         {
             var aliasInfo = string.IsNullOrEmpty(user.Alias) ? string.Empty : $" | Псевдоним: {user.Alias}";
             var fullName = $"{user.FirstName} {user.LastName ?? string.Empty}".Trim();
-            return $"👤 ID: {user.UserId} | @{user.Username} | {fullName}{aliasInfo}";
+            return $"{Emoji.User} ID: {user.UserId} | @{user.Username} | {fullName}{aliasInfo}";
         });
 
         var usersList = string.Join("\n", userRows);
 
         var responseText =
             $"""
-             📋 Список пользователей ({users.Count}):
+             {Emoji.List} Список пользователей ({users.Count}):
 
              {usersList}
 
-             💡 Используйте /{SetAliasCommandHandler.Metadata.Command} ID псевдоним для установки псевдонима
+             {Emoji.Bulb} Используйте /{SetAliasCommandHandler.Metadata.Command} ID псевдоним для установки псевдонима
              """;
 
         return new(responseText);

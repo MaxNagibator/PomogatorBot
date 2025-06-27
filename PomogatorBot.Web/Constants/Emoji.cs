@@ -156,4 +156,34 @@ public static class Emoji
     /// 🗑️
     /// </summary>
     public const string Trash = "🗑️";
+
+    /// <summary>
+    /// 📜
+    /// </summary>
+    public const string History = "📜";
+
+    /// <summary>
+    /// 🔄
+    /// </summary>
+    public const string Refresh = "🔄";
+
+    /// <summary>
+    /// 🔁
+    /// </summary>
+    public const string Retry = "🔁";
+
+    /// <summary>
+    /// 🧹
+    /// </summary>
+    public const string Clear = "🧹";
+
+    /// <summary>
+    /// ⏳
+    /// </summary>
+    public const string Loading = "⏳";
+
+    /// <summary>
+    /// ▫️
+    /// </summary>
+    public const string Bullet = "▫️";
 }

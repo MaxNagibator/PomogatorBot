@@ -1,4 +1,5 @@
 ﻿using PomogatorBot.Web.Commands.Common;
+using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Features.Keyboard;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
@@ -17,7 +18,7 @@ public class SubscriptionsCommandHandler(
 
     protected override Task<BotResponse> HandleUserCommandAsync(Message message, DatabaseUser user, CancellationToken cancellationToken)
     {
-        var response = new BotResponse("🎚️ Управление подписками:", keyboardFactory.CreateForSubscriptions(user.Subscriptions));
+        var response = new BotResponse($"{Emoji.Settings} Управление подписками:", keyboardFactory.CreateForSubscriptions(user.Subscriptions));
         return Task.FromResult(response);
     }
 }

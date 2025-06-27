@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using PomogatorBot.Web.Commands.Common;
 using PomogatorBot.Web.Configuration;
+using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
 
@@ -13,15 +14,15 @@ public class SetAliasCommandHandler(
     : AdminRequiredCommandHandler(adminOptions), ICommandMetadata
 {
     private const string HelpMessage =
-        """
-        🏷️ Справка по команде установки псевдонима:
+        $"""
+         {Emoji.Tag} Справка по команде установки псевдонима:
 
-        Использование:
-        /setalias ID_пользователя псевдоним
+         Использование:
+         /setalias ID_пользователя псевдоним
 
-        📝 Пример:
-        /setalias 123456789 Василий
-        """;
+         {Emoji.Memo} Пример:
+         /setalias 123456789 Василий
+         """;
 
     public static CommandMetadata Metadata { get; } = new("setalias", "Установить псевдоним для пользователя", true);
 
@@ -47,29 +48,29 @@ public class SetAliasCommandHandler(
 
         if (parts.Length < 2)
         {
-            return new("❗ Необходимо указать ID пользователя и псевдоним.", new());
+            return new($"{Emoji.Important} Необходимо указать ID пользователя и псевдоним.", new());
         }
 
         if (long.TryParse(parts[0], out var userId) == false)
         {
-            return new("❌ Некорректный ID пользователя. Используйте числовое значение.", new());
+            return new($"{Emoji.Error} Некорректный ID пользователя. Используйте числовое значение.", new());
         }
 
         var alias = parts[1].Trim();
 
         if (string.IsNullOrWhiteSpace(alias))
         {
-            return new("❗ Псевдоним не может быть пустым.", new());
+            return new($"{Emoji.Important} Псевдоним не может быть пустым.", new());
         }
 
         var success = await userService.SetAliasAsync(userId, alias, cancellationToken);
 
         if (success == false)
         {
-            return new($"❌ Пользователь с ID {userId} не найден.", new());
+            return new($"{Emoji.Error} Пользователь с ID {userId} не найден.", new());
         }
 
         logger.LogInformation("Установлен псевдоним для пользователя {UserId}: {Alias}", userId, alias);
-        return new($"✅ Псевдоним '{alias}' успешно установлен для пользователя {userId}.", new());
+        return new($"{Emoji.Success} Псевдоним '{alias}' успешно установлен для пользователя {userId}.", new());
     }
 }

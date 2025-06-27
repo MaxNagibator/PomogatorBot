@@ -1,3 +1,4 @@
+using PomogatorBot.Web.Constants;
 using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Common;
@@ -11,7 +12,7 @@ public static class MessageExtensions
 
         if (message.From?.Id == null)
         {
-            return new("❌ Ошибка идентификации пользователя");
+            return new($"{Emoji.Error} Ошибка идентификации пользователя");
         }
 
         userId = message.From.Id;

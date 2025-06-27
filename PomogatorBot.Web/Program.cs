@@ -62,6 +62,7 @@ try
         .AddScoped<UserService>()
         .AddScoped<MessagePreviewService>()
         .AddScoped<MessageTemplateService>()
+        .AddScoped<BroadcastHistoryService>()
         .AddSingleton<BroadcastPendingService>();
 
     builder.Services.AddProblemDetails(options =>

@@ -11,6 +11,7 @@ public class UserService(
     ApplicationDbContext context,
     ITelegramBotClient botClient,
     MessageTemplateService messageTemplateService,
+    BroadcastHistoryService broadcastHistoryService,
     ILogger<UserService> logger)
 {
     private static readonly LinkPreviewOptions LinkPreviewOptions = new()
@@ -104,7 +105,13 @@ public class UserService(
         var users = await queryable
             .ToListAsync(cancellationToken);
 
+        var totalUsers = users.Count;
+
+        var broadcast = await broadcastHistoryService.StartAsync(message, adminId, totalUsers, cancellationToken);
+
         var successfulSends = 0;
+        var failedSends = 0;
+        var errorMessages = new List<string>();
 
         foreach (var user in users)
         {
@@ -124,14 +131,41 @@ public class UserService(
             catch (ApiRequestException exception) when (exception.ErrorCode == 403)
             {
                 logger.LogInformation(exception, "Пользователь {UserId} заблокировал бота (ErrorCode: 403). Удаляем учетную запись", user.UserId);
+
+                failedSends++;
+                errorMessages.Add($"Пользователь {user.UserId} ({user.Username}) заблокировал бота");
+
                 await DeleteAsync(user.UserId, cancellationToken);
+            }
+            catch (ApiRequestException exception)
+            {
+                logger.LogError(exception, "API error sending message to user {UserId}: {ErrorCode}", user.UserId, exception.ErrorCode);
+
+                failedSends++;
+                errorMessages.Add($"API Error {exception.ErrorCode} для пользователя {user.UserId} ({user.Username})");
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "Error sending message to user {UserId}", user.UserId);
+                logger.LogError(exception, "Unknown error sending message to user {UserId}", user.UserId);
+
+                failedSends++;
+                errorMessages.Add($"Неизвестная ошибка для пользователя {user.UserId} ({user.Username}): {exception.Message}");
+            }
+
+            if ((successfulSends + failedSends) % 10 == 0)
+            {
+                await broadcastHistoryService.UpdateProgressAsync(broadcast.Id, successfulSends, failedSends, cancellationToken);
             }
         }
 
-        return new(users.Count, successfulSends, users.Count - successfulSends);
+        var errors = string.Join("; ", errorMessages.Take(5)) + (errorMessages.Count > 5 ? "..." : "");
+
+        var errorSummary = errorMessages.Count > 0
+            ? errors
+            : null;
+
+        await broadcastHistoryService.CompleteAsync(broadcast.Id, successfulSends, failedSends, errorSummary, cancellationToken);
+
+        return new(totalUsers, successfulSends, failedSends);
     }
 }

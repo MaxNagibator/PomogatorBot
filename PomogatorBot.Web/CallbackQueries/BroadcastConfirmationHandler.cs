@@ -1,4 +1,5 @@
 using PomogatorBot.Web.CallbackQueries.Common;
+using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
 
@@ -31,27 +32,27 @@ public class BroadcastConfirmationHandler(
         if (CallbackDataParser.TryParseWithMultiplePrefixes(callbackData, PrefixActions, out var action, out var pendingId) == false)
         {
             logger.LogWarning("Unknown broadcast callback action: {CallbackData}", callbackData);
-            return new("❓ Неизвестное действие");
+            return new($"{Emoji.Question} Неизвестное действие");
         }
 
         var pendingBroadcast = broadcastPendingService.GetPendingBroadcast(pendingId);
 
         if (pendingBroadcast == null)
         {
-            return new("⚠️ Рассылка не найдена или истекла. Попробуйте создать новую рассылку.");
+            return new($"{Emoji.Warning} Рассылка не найдена или истекла. Попробуйте создать новую рассылку.");
         }
 
         if (pendingBroadcast.AdminUserId != userId)
         {
             logger.LogWarning("User {UserId} tried to access broadcast created by {AdminUserId}", userId, pendingBroadcast.AdminUserId);
-            return new("❌ У вас нет прав для выполнения этого действия.");
+            return new($"{Emoji.Error} У вас нет прав для выполнения этого действия.");
         }
 
         return action switch
         {
             "confirm" => await HandleConfirmBroadcast(pendingBroadcast, cancellationToken),
             "cancel" => HandleCancelBroadcast(pendingBroadcast),
-            _ => new("❓ Неизвестное действие"),
+            _ => new($"{Emoji.Question} Неизвестное действие"),
         };
     }
 
@@ -71,12 +72,12 @@ public class BroadcastConfirmationHandler(
             broadcastPendingService.RemovePendingBroadcast(pendingBroadcast.Id);
 
             var successMessage = $"""
-                                  ✅ Рассылка успешно выполнена!
+                                  {Emoji.Success} Рассылка успешно выполнена!
 
-                                  📊 Статистика:
-                                  👥 Всего пользователей: {response.TotalUsers}
-                                  ✅ Успешно отправлено: {response.SuccessfulSends}
-                                  ❌ С ошибкой: {response.FailedSends}
+                                  {Emoji.Chart} Статистика:
+                                  {Emoji.Users} Всего пользователей: {response.TotalUsers}
+                                  {Emoji.Success} Успешно отправлено: {response.SuccessfulSends}
+                                  {Emoji.Error} С ошибкой: {response.FailedSends}
                                   """;
 
             logger.LogInformation("Broadcast {BroadcastId} completed successfully. Success: {Success}, Failed: {Failed}, Total: {Total}",
@@ -87,7 +88,7 @@ public class BroadcastConfirmationHandler(
         catch (Exception exception)
         {
             logger.LogError(exception, "Error executing broadcast {BroadcastId}", pendingBroadcast.Id);
-            return new("❌ Произошла ошибка при выполнении рассылки. Попробуйте еще раз.");
+            return new($"{Emoji.Error} Произошла ошибка при выполнении рассылки. Попробуйте еще раз.");
         }
     }
 
@@ -98,6 +99,6 @@ public class BroadcastConfirmationHandler(
         logger.LogInformation("Broadcast {BroadcastId} cancelled by admin {AdminUserId}",
             pendingBroadcast.Id, pendingBroadcast.AdminUserId);
 
-        return new("❌ Рассылка отменена.");
+        return new($"{Emoji.Error} Рассылка отменена.");
     }
 }
