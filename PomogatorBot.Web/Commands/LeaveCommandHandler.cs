@@ -1,4 +1,5 @@
 ﻿using PomogatorBot.Web.Commands.Common;
+using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
 using DatabaseUser = PomogatorBot.Web.Infrastructure.Entities.User;
@@ -14,6 +15,6 @@ public class LeaveCommandHandler(UserService userService) : UserRequiredCommandH
     protected override async Task<BotResponse> HandleUserCommandAsync(Message message, DatabaseUser user, CancellationToken cancellationToken)
     {
         await UserService.DeleteAsync(user.UserId, cancellationToken);
-        return new($"До свидания, {user.FirstName}! Мы будем скучать 😢");
+        return new($"До свидания, {user.FirstName}! Мы будем скучать {Emoji.Sad}");
     }
 }

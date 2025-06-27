@@ -2,6 +2,8 @@ using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using PomogatorBot.Web.CallbackQueries.Common;
 using PomogatorBot.Web.Commands.Common;
+using PomogatorBot.Web.Configuration;
+using PomogatorBot.Web.Features.Keyboard;
 using PomogatorBot.Web.Infrastructure;
 using PomogatorBot.Web.Middlewares;
 using PomogatorBot.Web.Services;
@@ -30,13 +32,23 @@ try
     builder.Services.AddSerilog();
     builder.Services.AddHealthChecks();
 
+    builder.Services.Configure<BotConfiguration>(builder.Configuration.GetSection("BotConfiguration"));
+    builder.Services.Configure<AdminConfiguration>(builder.Configuration.GetSection("Admin"));
+
     builder.Services.AddPooledDbContextFactory<ApplicationDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
             .UseSnakeCaseNamingConvention());
 
     builder.Services.AddScoped(provider => provider.GetRequiredService<IDbContextFactory<ApplicationDbContext>>().CreateDbContext());
 
-    builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(builder.Configuration.GetValue<string>("BotConfiguration:Token")!));
+    var botConfiguration = builder.Configuration.GetSection("BotConfiguration").Get<BotConfiguration>();
+
+    if (string.IsNullOrEmpty(botConfiguration?.Token))
+    {
+        throw new InvalidOperationException("Токен бота не настроен. Пожалуйста, установите «BotConfiguration:Token» в конфигурации.");
+    }
+
+    builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(botConfiguration.Token));
 
     builder.Services.AddHostedService<BotBackgroundService>();
 
@@ -50,6 +62,7 @@ try
         .AddScoped<UserService>()
         .AddScoped<MessagePreviewService>()
         .AddScoped<MessageTemplateService>()
+        .AddScoped<BroadcastHistoryService>()
         .AddSingleton<BroadcastPendingService>();
 
     builder.Services.AddProblemDetails(options =>

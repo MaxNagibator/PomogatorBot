@@ -1,4 +1,5 @@
 ﻿using PomogatorBot.Web.Commands.Common;
+using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
 using User = PomogatorBot.Web.Infrastructure.Entities.User;
@@ -20,14 +21,14 @@ public class JoinCommandHandler(
 
         if (user == null)
         {
-            return new("Ошибка идентификации пользователя");
+            return new($"{Emoji.Error} Ошибка идентификации пользователя");
         }
 
         var existingUser = await userService.GetAsync(user.Id, cancellationToken);
 
         if (existingUser != null)
         {
-            return new("Вы уже зарегистрированы!");
+            return new($"{Emoji.Success} Вы уже зарегистрированы!");
         }
 
         var newUser = new User
@@ -43,6 +44,6 @@ public class JoinCommandHandler(
         await userService.SaveAsync(newUser, cancellationToken);
         logger.LogInformation("New user joined: {UserId}", user.Id);
 
-        return new($"Добро пожаловать, {newUser.FirstName}! 🎉");
+        return new($"Добро пожаловать, {newUser.FirstName}! {Emoji.Party}");
     }
 }

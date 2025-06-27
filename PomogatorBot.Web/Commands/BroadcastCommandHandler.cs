@@ -1,4 +1,8 @@
-﻿using PomogatorBot.Web.Commands.Common;
+﻿using Microsoft.Extensions.Options;
+using PomogatorBot.Web.Commands.Common;
+using PomogatorBot.Web.Configuration;
+using PomogatorBot.Web.Constants;
+using PomogatorBot.Web.Features.Keyboard;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -6,12 +10,12 @@ using Telegram.Bot.Types.Enums;
 namespace PomogatorBot.Web.Commands;
 
 public class BroadcastCommandHandler(
-    IConfiguration configuration,
+    IOptions<AdminConfiguration> adminOptions,
     UserService userService,
     KeyboardFactory keyboardFactory,
     BroadcastPendingService broadcastPendingService,
     MessagePreviewService messagePreviewService)
-    : AdminRequiredCommandHandler(configuration), ICommandMetadata
+    : AdminRequiredCommandHandler(adminOptions), ICommandMetadata
 {
     public static CommandMetadata Metadata { get; } = new("b", "Возвестить пастве", true);
 
@@ -69,19 +73,19 @@ public class BroadcastCommandHandler(
         var preview = messagePreviewService.CreatePreview(broadcastMessage, entities);
 
         var previewHeader = $"""
-                             📢 Подтверждение рассылки:
+                             {Emoji.Megaphone} Подтверждение рассылки:
 
-                             🎯 Подписки: {subscriptionInfo}
-                             👥 Получателей (админ учитывается): {userCount}
+                             {Emoji.Target} Подписки: {subscriptionInfo}
+                             {Emoji.Users} Получателей (админ учитывается): {userCount}
 
-                             📋 Предварительный просмотр (как увидят пользователи):
+                             {Emoji.List} Предварительный просмотр (как увидят пользователи):
                              ━━━━━
                              """;
 
-        var previewFooter = """
-                            ━━━━━
-                            ⚠️ Подтвердите отправку рассылки всем указанным пользователям.
-                            """;
+        var previewFooter = $"""
+                             ━━━━━
+                             {Emoji.Warning} Подтвердите отправку рассылки всем указанным пользователям.
+                             """;
 
         var confirmationMessage = string.Join(Environment.NewLine, previewHeader, preview.PreviewText, previewFooter);
         var adjustedEntities = AdjustEntitiesForConfirmationMessage(preview.PreviewEntities, previewHeader.Length + Environment.NewLine.Length);
@@ -95,7 +99,7 @@ public class BroadcastCommandHandler(
         var subscribes = SubscriptionExtensions.SubscriptionMetadata
             .Values
             .Where(x => x.Subscription != Subscribes.All)
-            .Select(x => $"▫️ {x.Subscription}");
+            .Select(x => $"{Emoji.Bullet} {x.Subscription}");
 
         var message = $"""
                        📢 Справка по команде рассылки:
@@ -107,12 +111,12 @@ public class BroadcastCommandHandler(
                        {string.Join(Environment.NewLine, subscribes)}
 
                        Доступные теги:
-                       <first_name> - имя пользователя
-                       <username> - ник пользователя
-                       <alias> - псевдоним пользователя (если нет, то имя)
+                       {TemplateVariables.User.FirstName} - имя пользователя
+                       {TemplateVariables.User.Username}- ник пользователя
+                       {TemplateVariables.User.Alias} - псевдоним пользователя (если нет, то имя)
 
-                       ❗При {Subscribes.None} отправится всем пользователям
-                       ❗При отсутствии подписок отправится всем пользователям
+                       {Emoji.Important}При {Subscribes.None} отправится всем пользователям
+                       {Emoji.Important}При отсутствии подписок отправится всем пользователям
                        """;
 
         return message;
@@ -122,7 +126,7 @@ public class BroadcastCommandHandler(
     {
         if (args.StartsWith('[') == false || args.EndsWith(']') == false)
         {
-            throw new ArgumentException("not found [ or ]");
+            throw new ArgumentException($"{Emoji.Error} Не найдены скобки [ или ]. Используйте формат: [подписки]");
         }
 
         var subscriptionParam = args.Trim('[', ']');
@@ -144,7 +148,7 @@ public class BroadcastCommandHandler(
             }
             else
             {
-                throw new ArgumentException(part + " not parsed");
+                throw new ArgumentException($"{Emoji.Error} Неизвестная подписка: '{part}'. Проверьте доступные подписки в справке.");
             }
         }
 
@@ -155,7 +159,7 @@ public class BroadcastCommandHandler(
     {
         if (subscribes == Subscribes.None)
         {
-            return "Всем пользователям";
+            return $"{Emoji.Users} Всем пользователям";
         }
 
         var metadata = SubscriptionExtensions.SubscriptionMetadata;
@@ -169,7 +173,7 @@ public class BroadcastCommandHandler(
 
         return activeSubscriptions.Count > 0
             ? string.Join(", ", activeSubscriptions)
-            : "Всем пользователям";
+            : $"{Emoji.Users} Всем пользователям";
     }
 
     private static MessageEntity[]? AdjustEntitiesForConfirmationMessage(MessageEntity[]? entities, int offset)

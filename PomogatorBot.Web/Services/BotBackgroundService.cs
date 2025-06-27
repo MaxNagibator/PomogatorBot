@@ -1,5 +1,6 @@
 ﻿using PomogatorBot.Web.CallbackQueries.Common;
 using PomogatorBot.Web.Commands.Common;
+using PomogatorBot.Web.Features.Keyboard;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;

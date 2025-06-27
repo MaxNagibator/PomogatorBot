@@ -1,13 +1,16 @@
+using Microsoft.Extensions.Options;
 using PomogatorBot.Web.Commands.Common;
+using PomogatorBot.Web.Configuration;
+using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Commands;
 
 public class UsersCommandHandler(
-    IConfiguration configuration,
+    IOptions<AdminConfiguration> adminOptions,
     UserService userService)
-    : AdminRequiredCommandHandler(configuration), ICommandMetadata
+    : AdminRequiredCommandHandler(adminOptions), ICommandMetadata
 {
     public static CommandMetadata Metadata { get; } = new("users", "Показать список всех пользователей", true);
 
@@ -19,24 +22,26 @@ public class UsersCommandHandler(
 
         if (users.Count == 0)
         {
-            return new("Нет зарегистрированных пользователей.");
+            return new($"{Emoji.Users} Нет зарегистрированных пользователей.");
         }
 
         var userRows = users.Select(user =>
         {
             var aliasInfo = string.IsNullOrEmpty(user.Alias) ? string.Empty : $" | Псевдоним: {user.Alias}";
-            return $"👤 ID: {user.UserId} | @{user.Username} | {user.FirstName} {user.LastName}{aliasInfo}";
+            var fullName = $"{user.FirstName} {user.LastName ?? string.Empty}".Trim();
+            return $"{Emoji.User} ID: {user.UserId} | @{user.Username} | {fullName}{aliasInfo}";
         });
 
         var usersList = string.Join("\n", userRows);
 
-        var responseText = $"""
-                            📋 Список пользователей ({users.Count}):
+        var responseText =
+            $"""
+             {Emoji.List} Список пользователей ({users.Count}):
 
-                            {usersList}
+             {usersList}
 
-                            Используйте /{SetAliasCommandHandler.Metadata.Command} ID псевдоним для установки псевдонима
-                            """;
+             {Emoji.Bulb} Используйте /{SetAliasCommandHandler.Metadata.Command} ID псевдоним для установки псевдонима
+             """;
 
         return new(responseText);
     }
