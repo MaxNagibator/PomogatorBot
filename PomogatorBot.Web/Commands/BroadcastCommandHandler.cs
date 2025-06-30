@@ -4,6 +4,7 @@ using PomogatorBot.Web.Configuration;
 using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Features.Keyboard;
 using PomogatorBot.Web.Services;
+using PomogatorBot.Web.Utils;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -53,19 +54,11 @@ public class BroadcastCommandHandler(
 
         var entitiesOffset = message.Text.IndexOf(']', StringComparison.Ordinal) + 2;
 
-        var entities = message.Entities?
+        var filteredEntities = message.Entities?
             .SkipWhile(x => x.Type == MessageEntityType.BotCommand)
-            .Select(x => new MessageEntity
-            {
-                Length = x.Length,
-                Offset = x.Offset - entitiesOffset,
-                Type = x.Type,
-                Url = x.Url,
-                User = x.User,
-                Language = x.Language,
-                CustomEmojiId = x.CustomEmojiId,
-            })
             .ToArray();
+
+        var entities = MessageEntityHelper.OffsetEntities(filteredEntities, -entitiesOffset);
 
         var userCount = await userService.GetUserCountBySubscriptionAsync(subscribes, cancellationToken);
         var pendingId = broadcastPendingService.StorePendingBroadcast(broadcastMessage, subscribes, entities, message.From!.Id);
@@ -178,22 +171,6 @@ public class BroadcastCommandHandler(
 
     private static MessageEntity[]? AdjustEntitiesForConfirmationMessage(MessageEntity[]? entities, int offset)
     {
-        if (entities == null || entities.Length == 0)
-        {
-            return null;
-        }
-
-        return entities
-            .Select(x => new MessageEntity
-            {
-                Type = x.Type,
-                Offset = x.Offset + offset,
-                Length = x.Length,
-                Url = x.Url,
-                User = x.User,
-                Language = x.Language,
-                CustomEmojiId = x.CustomEmojiId,
-            })
-            .ToArray();
+        return MessageEntityHelper.OffsetEntities(entities, offset);
     }
 }

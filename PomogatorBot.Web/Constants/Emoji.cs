@@ -186,4 +186,14 @@ public static class Emoji
     /// ▫️
     /// </summary>
     public const string Bullet = "▫️";
+
+    /// <summary>
+    /// 🚨
+    /// </summary>
+    public const string Alert = "🚨";
+
+    /// <summary>
+    /// 💬
+    /// </summary>
+    public const string Message = "💬";
 }

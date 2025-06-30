@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using PomogatorBot.Tests.Infrastructure.Entities;
 using PomogatorBot.Web.Infrastructure;
 using PomogatorBot.Web.Infrastructure.Entities;
 using PomogatorBot.Web.Services;
@@ -10,10 +11,6 @@ namespace PomogatorBot.Tests.Services;
 [TestFixture]
 public class BroadcastHistoryServiceTests
 {
-    private ApplicationDbContext _context = null!;
-    private BroadcastHistoryService _service = null!;
-    private ILogger<BroadcastHistoryService> _logger = null!;
-
     [SetUp]
     public void SetUp()
     {
@@ -31,6 +28,10 @@ public class BroadcastHistoryServiceTests
     {
         _context.Dispose();
     }
+
+    private TestApplicationDbContext _context = null!;
+    private BroadcastHistoryService _service = null!;
+    private ILogger<BroadcastHistoryService> _logger = null!;
 
     /// <summary>
     /// Тест успешного начала рассылки.

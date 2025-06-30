@@ -107,7 +107,7 @@ public class UserService(
 
         var totalUsers = users.Count;
 
-        var broadcast = await broadcastHistoryService.StartAsync(message, adminId, totalUsers, cancellationToken);
+        var broadcast = await broadcastHistoryService.StartAsync(message, adminId, totalUsers, entities, cancellationToken);
 
         var successfulSends = 0;
         var failedSends = 0;

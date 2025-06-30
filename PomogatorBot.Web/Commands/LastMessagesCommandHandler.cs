@@ -5,6 +5,7 @@ using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Features.Keyboard;
 using PomogatorBot.Web.Infrastructure.Entities;
 using PomogatorBot.Web.Services;
+using PomogatorBot.Web.Utils;
 using System.Text;
 using Telegram.Bot.Types;
 
@@ -20,6 +21,86 @@ public class LastMessagesCommandHandler(
 
     public override string Command => Metadata.Command;
 
+    public static (string responseText, MessageEntity[]? entities) FormatBroadcastsResponseWithEntities(
+        List<BroadcastHistory> broadcasts,
+        BroadcastStatistics statistics,
+        int requestedCount)
+    {
+        var stringBuilder = new StringBuilder();
+        var allEntities = new List<MessageEntity>();
+
+        var headerText = $"{Emoji.History} Последние {Math.Min(requestedCount, broadcasts.Count)} рассылок:\n\n";
+        stringBuilder.Append(headerText);
+
+        var statsText = $"""
+                         {Emoji.Chart} Общая статистика:
+                         {Emoji.Bullet} Всего рассылок: {statistics.Total}
+                         {Emoji.Bullet} Завершено: {statistics.Completed} {Emoji.Success}
+                         {Emoji.Bullet} В процессе: {statistics.InProgress} {Emoji.Loading}
+                         {Emoji.Bullet} Неуспешно: {statistics.Failed} {Emoji.Error}
+                         {Emoji.Bullet} Всего сообщений: {statistics.TotalMessagesSent}
+
+
+                         """;
+
+        stringBuilder.Append(statsText);
+
+        for (var i = 0; i < broadcasts.Count; i++)
+        {
+            var broadcast = broadcasts[i];
+
+            var statusIcon = broadcast.Status switch
+            {
+                BroadcastStatus.Completed => Emoji.Success,
+                BroadcastStatus.InProgress => Emoji.Loading,
+                BroadcastStatus.Failed => Emoji.Error,
+                _ => Emoji.Question,
+            };
+
+            var duration = broadcast.CompletedAt.HasValue
+                ? $" ({(broadcast.CompletedAt.Value - broadcast.StartedAt).Milliseconds} мс)"
+                : " (в процессе)";
+
+            var broadcastInfo = $"""
+                                 {i + 1}. {statusIcon} {broadcast.StartedAt:dd.MM.yyyy HH:mm}{duration}
+                                    {Emoji.Users} Получателей: {broadcast.TotalRecipients}
+                                    {Emoji.Success} Успешно: {broadcast.SuccessfulDeliveries}
+                                    {Emoji.Error} Неуспешно: {broadcast.FailedDeliveries}
+                                    {Emoji.Message}
+                                 """;
+
+            stringBuilder.Append(broadcastInfo);
+
+            var messageStartOffset = stringBuilder.Length;
+            var messagePreview = TruncateMessage(broadcast.MessageText, 200);
+            stringBuilder.Append(messagePreview);
+            stringBuilder.Append(Environment.NewLine);
+            stringBuilder.Append("━━━━━");
+
+            var adaptedEntities = MessageEntityHelper.AdaptEntitiesForTruncatedMessage(broadcast.MessageEntities,
+                broadcast.MessageText,
+                messagePreview,
+                messageStartOffset);
+
+            if (adaptedEntities != null)
+            {
+                allEntities.AddRange(adaptedEntities);
+            }
+
+            if (string.IsNullOrEmpty(broadcast.ErrorSummary) == false)
+            {
+                stringBuilder.AppendLine($"\n   {Emoji.Alert} Ошибки: {broadcast.ErrorSummary}");
+            }
+
+            if (i < broadcasts.Count - 1)
+            {
+                stringBuilder.AppendLine();
+            }
+        }
+
+        return (stringBuilder.ToString(), allEntities.Count > 0 ? allEntities.ToArray() : null);
+    }
+
     protected override async Task<BotResponse> HandleAdminCommandAsync(Message message, CancellationToken cancellationToken)
     {
         var count = ParseMessageCount(message.Text);
@@ -33,10 +114,10 @@ public class LastMessagesCommandHandler(
             return new(emptyResponse, emptyKeyboard);
         }
 
-        var responseText = FormatBroadcastsResponse(lastBroadcasts, statistics, count);
+        var (responseText, responseEntities) = FormatBroadcastsResponseWithEntities(lastBroadcasts, statistics, count);
         var keyboard = keyboardFactory.CreateForLastMessages();
 
-        return new(responseText, keyboard);
+        return new(responseText, keyboard, responseEntities);
     }
 
     private static int ParseMessageCount(string? messageText)
@@ -61,60 +142,6 @@ public class LastMessagesCommandHandler(
         return 1;
     }
 
-    // TODO: Вынести а общий класс
-    public static string FormatBroadcastsResponse(List<BroadcastHistory> broadcasts, BroadcastStatistics statistics, int requestedCount)
-    {
-        var sb = new StringBuilder();
-
-        sb.AppendLine($"{Emoji.History} Последние {Math.Min(requestedCount, broadcasts.Count)} рассылок:");
-        sb.AppendLine();
-
-        sb.AppendLine($"{Emoji.Chart} Общая статистика:");
-        sb.AppendLine($"▫️ Всего рассылок: {statistics.Total}");
-        sb.AppendLine($"▫️ Завершено: {statistics.Completed} {Emoji.Success}");
-        sb.AppendLine($"▫️ В процессе: {statistics.InProgress} ⏳");
-        sb.AppendLine($"▫️ Неуспешно: {statistics.Failed} {Emoji.Error}");
-        sb.AppendLine($"▫️ Всего сообщений: {statistics.TotalMessagesSent}");
-        sb.AppendLine();
-
-        for (var i = 0; i < broadcasts.Count; i++)
-        {
-            var broadcast = broadcasts[i];
-
-            var statusIcon = broadcast.Status switch
-            {
-                BroadcastStatus.Completed => Emoji.Success,
-                BroadcastStatus.InProgress => "⏳",
-                BroadcastStatus.Failed => Emoji.Error,
-                _ => "❓",
-            };
-
-            var messagePreview = TruncateMessage(broadcast.MessageText, 100);
-
-            var duration = broadcast.CompletedAt.HasValue
-                ? $" ({(broadcast.CompletedAt.Value - broadcast.StartedAt).TotalSeconds:F1}с)"
-                : " (в процессе)";
-
-            sb.AppendLine($"{i + 1}. {statusIcon} {broadcast.StartedAt:dd.MM.yyyy HH:mm}{duration}");
-            sb.AppendLine($"   👥 Получателей: {broadcast.TotalRecipients}");
-            sb.AppendLine($"   ✅ Успешно: {broadcast.SuccessfulDeliveries}");
-            sb.AppendLine($"   ❌ Неуспешно: {broadcast.FailedDeliveries}");
-            sb.AppendLine($"   💬 {messagePreview}");
-
-            if (!string.IsNullOrEmpty(broadcast.ErrorSummary))
-            {
-                sb.AppendLine($"   🚨 Ошибки: {broadcast.ErrorSummary}");
-            }
-
-            if (i < broadcasts.Count - 1)
-            {
-                sb.AppendLine();
-            }
-        }
-
-        return sb.ToString();
-    }
-
     private static string TruncateMessage(string message, int maxLength)
     {
         if (string.IsNullOrEmpty(message) || message.Length <= maxLength)
@@ -122,6 +149,6 @@ public class LastMessagesCommandHandler(
             return message;
         }
 
-        return message[..(maxLength - 3)] + "...";
+        return $"{message[..(maxLength - 3)]}...";
     }
 }

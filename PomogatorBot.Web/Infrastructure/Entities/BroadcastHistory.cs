@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Infrastructure.Entities;
 
@@ -65,4 +66,9 @@ public class BroadcastHistory
     /// </summary>
     [MaxLength(1000)]
     public string? ErrorSummary { get; set; }
+
+    /// <summary>
+    /// Сущности форматирования сообщения (жирный, курсив, ссылки и т.д.)
+    /// </summary>
+    public MessageEntity[]? MessageEntities { get; set; }
 }

@@ -3,6 +3,7 @@ using PomogatorBot.Web.Commands;
 using PomogatorBot.Web.Constants;
 using PomogatorBot.Web.Features.Keyboard;
 using PomogatorBot.Web.Services;
+using PomogatorBot.Web.Utils;
 using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.CallbackQueries;
@@ -55,10 +56,10 @@ public class LastMessagesCallbackHandler(
             return new(emptyResponse, emptyKeyboard);
         }
 
-        var responseText = LastMessagesCommandHandler.FormatBroadcastsResponse(lastBroadcasts, statistics, count);
+        var (responseText, responseEntities) = LastMessagesCommandHandler.FormatBroadcastsResponseWithEntities(lastBroadcasts, statistics, count);
         var keyboard = keyboardFactory.CreateForLastMessages();
 
-        return new(responseText, keyboard);
+        return new(responseText, keyboard, responseEntities);
     }
 
     private async Task<BotResponse> HandleRefresh(CancellationToken cancellationToken)
@@ -73,9 +74,14 @@ public class LastMessagesCallbackHandler(
             return new(emptyResponse, emptyKeyboard);
         }
 
-        var responseText = $"{Emoji.Refresh} Обновлено.\n\n" + LastMessagesCommandHandler.FormatBroadcastsResponse(lastBroadcasts, statistics, DefaultCount);
+        var (broadcastsText, broadcastsEntities) = LastMessagesCommandHandler.FormatBroadcastsResponseWithEntities(lastBroadcasts, statistics, DefaultCount);
+        var refreshPrefix = $"{Emoji.Refresh} Обновлено.\n\n";
+        var responseText = refreshPrefix + broadcastsText;
+
+        var responseEntities = MessageEntityHelper.OffsetEntities(broadcastsEntities, refreshPrefix.Length);
+
         var keyboard = keyboardFactory.CreateForLastMessages();
 
-        return new(responseText, keyboard);
+        return new(responseText, keyboard, responseEntities);
     }
 }

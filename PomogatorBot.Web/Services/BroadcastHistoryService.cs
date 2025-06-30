@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PomogatorBot.Web.Infrastructure;
 using PomogatorBot.Web.Infrastructure.Entities;
+using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Services;
 
@@ -12,11 +13,13 @@ public class BroadcastHistoryService(
         string messageText,
         long? adminUserId,
         int totalRecipients,
+        MessageEntity[]? messageEntities = null,
         CancellationToken cancellationToken = default)
     {
         var broadcast = new BroadcastHistory
         {
             MessageText = messageText,
+            MessageEntities = messageEntities,
             AdminUserId = adminUserId,
             TotalRecipients = totalRecipients,
             StartedAt = DateTime.UtcNow,

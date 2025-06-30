@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using PomogatorBot.Web.CallbackQueries.Common;
 using PomogatorBot.Web.Commands.Common;
 using PomogatorBot.Web.Configuration;
@@ -36,7 +37,9 @@ try
     builder.Services.Configure<AdminConfiguration>(builder.Configuration.GetSection("Admin"));
 
     builder.Services.AddPooledDbContextFactory<ApplicationDbContext>(options =>
-        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+        options.UseNpgsql(new NpgsqlDataSourceBuilder(builder.Configuration.GetConnectionString("DefaultConnection"))
+                .EnableDynamicJson()
+                .Build())
             .UseSnakeCaseNamingConvention());
 
     builder.Services.AddScoped(provider => provider.GetRequiredService<IDbContextFactory<ApplicationDbContext>>().CreateDbContext());

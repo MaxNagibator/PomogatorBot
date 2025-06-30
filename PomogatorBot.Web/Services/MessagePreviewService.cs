@@ -1,3 +1,4 @@
+using PomogatorBot.Web.Utils;
 using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Services;
@@ -42,7 +43,8 @@ public class MessagePreviewService(MessageTemplateService messageTemplateService
             }
         }
 
-        return adjustedEntities.ToArray();
+        var result = adjustedEntities.ToArray();
+        return MessageEntityHelper.ValidateEntities(result, previewMessage);
     }
 
     private MessageEntity? AdjustEntityOffset(string originalMessage, string previewMessage, MessageEntity entity)
@@ -69,16 +71,7 @@ public class MessagePreviewService(MessageTemplateService messageTemplateService
             return null;
         }
 
-        return new()
-        {
-            Type = entity.Type,
-            Offset = newOffset,
-            Length = newLength,
-            Url = entity.Url,
-            User = entity.User,
-            Language = entity.Language,
-            CustomEmojiId = entity.CustomEmojiId,
-        };
+        return MessageEntityHelper.CreateCopy(entity, newOffset, newLength);
     }
 }
 
