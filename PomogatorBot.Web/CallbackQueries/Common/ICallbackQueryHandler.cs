@@ -1,6 +1,4 @@
-﻿using Telegram.Bot.Types;
-
-namespace PomogatorBot.Web.CallbackQueries.Common;
+﻿namespace PomogatorBot.Web.CallbackQueries.Common;
 
 public interface ICallbackQueryHandler
 {

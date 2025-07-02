@@ -3,7 +3,6 @@ using PomogatorBot.Web.Infrastructure;
 using PomogatorBot.Web.Infrastructure.Entities;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
-using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Services;
 

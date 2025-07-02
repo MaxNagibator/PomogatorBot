@@ -1,4 +1,4 @@
-namespace PomogatorBot.Web.Constants;
+namespace PomogatorBot.Web.Common.Constants;
 
 /// <summary>
 /// Централизованное управление шаблонами переменных для сообщений.

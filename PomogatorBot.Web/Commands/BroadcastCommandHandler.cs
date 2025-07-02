@@ -1,11 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
-using PomogatorBot.Web.Commands.Common;
-using PomogatorBot.Web.Configuration;
-using PomogatorBot.Web.Constants;
-using PomogatorBot.Web.Features.Keyboard;
-using PomogatorBot.Web.Services;
-using PomogatorBot.Web.Utils;
-using Telegram.Bot.Types;
+using PomogatorBot.Web.Common.Configuration;
+using PomogatorBot.Web.Common.Constants;
+using PomogatorBot.Web.Common.Keyboard;
 using Telegram.Bot.Types.Enums;
 
 namespace PomogatorBot.Web.Commands;

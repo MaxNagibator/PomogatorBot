@@ -1,4 +1,4 @@
-namespace PomogatorBot.Web.Common;
+namespace PomogatorBot.Web.Common.Subscriptions;
 
 [Flags]
 public enum Subscribes

@@ -1,4 +1,4 @@
-﻿namespace PomogatorBot.Web.Common;
+﻿namespace PomogatorBot.Web.Common.Subscriptions;
 
 public class SubscriptionMeta
 {

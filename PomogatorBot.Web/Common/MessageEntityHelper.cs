@@ -1,6 +1,4 @@
-using Telegram.Bot.Types;
-
-namespace PomogatorBot.Web.Utils;
+namespace PomogatorBot.Web.Common;
 
 /// <summary>
 /// Утилитарный класс для работы с MessageEntity
@@ -60,9 +58,9 @@ public static class MessageEntityHelper
     /// Автоматически корректирует длину entities, которые пересекают границу обрезки.
     /// </remarks>
     public static MessageEntity[]? AdaptEntitiesForTruncatedMessage(
-        MessageEntity[]? entities, 
-        string originalMessage, 
-        string truncatedMessage, 
+        MessageEntity[]? entities,
+        string originalMessage,
+        string truncatedMessage,
         int additionalOffset = 0)
     {
         if (entities == null || entities.Length == 0)
@@ -93,6 +91,7 @@ public static class MessageEntityHelper
             }
 
             var originalMaxLength = originalMessage.Length - entity.Offset;
+
             if (originalMaxLength <= 0)
             {
                 continue;
@@ -128,10 +127,7 @@ public static class MessageEntityHelper
 
         foreach (var entity in entities)
         {
-            if (entity.Offset < 0 ||
-                entity.Length <= 0 || 
-                entity.Offset >= messageText.Length ||
-                entity.Offset + entity.Length > messageText.Length)
+            if (entity.Offset < 0 || entity.Length <= 0 || entity.Offset >= messageText.Length || entity.Offset + entity.Length > messageText.Length)
             {
                 continue;
             }
@@ -163,7 +159,7 @@ public static class MessageEntityHelper
             Url = original.Url,
             User = original.User,
             Language = original.Language,
-            CustomEmojiId = original.CustomEmojiId
+            CustomEmojiId = original.CustomEmojiId,
         };
     }
 }

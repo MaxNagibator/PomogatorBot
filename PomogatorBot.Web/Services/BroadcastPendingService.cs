@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Services;
 

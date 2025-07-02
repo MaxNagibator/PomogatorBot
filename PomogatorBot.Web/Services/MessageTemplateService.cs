@@ -1,4 +1,4 @@
-using PomogatorBot.Web.Constants;
+using PomogatorBot.Web.Common.Constants;
 using PomogatorBot.Web.Infrastructure.Entities;
 
 namespace PomogatorBot.Web.Services;

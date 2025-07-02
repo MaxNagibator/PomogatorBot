@@ -1,9 +1,9 @@
 using PomogatorBot.Web.CallbackQueries;
-using PomogatorBot.Web.Constants;
+using PomogatorBot.Web.Common.Constants;
 using System.Text;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace PomogatorBot.Web.Features.Keyboard;
+namespace PomogatorBot.Web.Common.Keyboard;
 
 /// <summary>
 /// Fluent-строитель для создания Telegram inline-клавиатур

@@ -1,6 +1,4 @@
-﻿using Telegram.Bot.Types;
-
-namespace PomogatorBot.Web.Commands.Common;
+﻿namespace PomogatorBot.Web.Commands.Common;
 
 public interface IBotCommandHandler
 {

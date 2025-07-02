@@ -1,9 +1,6 @@
-﻿using PomogatorBot.Web.Commands.Common;
-using PomogatorBot.Web.Constants;
-using PomogatorBot.Web.Features.Keyboard;
+﻿using PomogatorBot.Web.Common.Constants;
+using PomogatorBot.Web.Common.Keyboard;
 using PomogatorBot.Web.Infrastructure.Entities;
-using PomogatorBot.Web.Services;
-using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Commands;
 

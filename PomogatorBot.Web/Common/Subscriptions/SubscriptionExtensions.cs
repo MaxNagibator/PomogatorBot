@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
 
-namespace PomogatorBot.Web.Common;
+namespace PomogatorBot.Web.Common.Subscriptions;
 
 public static class SubscriptionExtensions
 {

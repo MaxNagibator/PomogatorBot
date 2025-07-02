@@ -1,5 +1,3 @@
-using Telegram.Bot.Types;
-
 namespace PomogatorBot.Web.Services;
 
 /// <summary>

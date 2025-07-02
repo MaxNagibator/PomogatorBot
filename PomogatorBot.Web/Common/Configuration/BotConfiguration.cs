@@ -1,4 +1,4 @@
-namespace PomogatorBot.Web.Configuration;
+namespace PomogatorBot.Web.Common.Configuration;
 
 /// <summary>
 /// Конфигурация Telegram бота.

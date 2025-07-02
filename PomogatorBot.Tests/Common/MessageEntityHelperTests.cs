@@ -1,8 +1,8 @@
-using PomogatorBot.Web.Utils;
+using PomogatorBot.Web.Common;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace PomogatorBot.Tests.Utils;
+namespace PomogatorBot.Tests.Common;
 
 [TestFixture]
 public class MessageEntityHelperTests

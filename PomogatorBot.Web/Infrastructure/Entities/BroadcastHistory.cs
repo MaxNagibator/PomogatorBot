@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Infrastructure.Entities;
 

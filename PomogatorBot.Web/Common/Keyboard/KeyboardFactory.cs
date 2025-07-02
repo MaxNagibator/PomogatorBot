@@ -1,10 +1,9 @@
 ﻿using PomogatorBot.Web.CallbackQueries;
 using PomogatorBot.Web.Commands;
-using PomogatorBot.Web.Constants;
-using PomogatorBot.Web.Services;
+using PomogatorBot.Web.Common.Constants;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace PomogatorBot.Web.Features.Keyboard;
+namespace PomogatorBot.Web.Common.Keyboard;
 
 public class KeyboardFactory(UserService userService)
 {

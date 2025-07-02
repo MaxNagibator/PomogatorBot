@@ -1,6 +1,4 @@
-﻿using Telegram.Bot.Types;
-
-namespace PomogatorBot.Web.Services;
+﻿namespace PomogatorBot.Web.Services;
 
 public class PendingBroadcast
 {

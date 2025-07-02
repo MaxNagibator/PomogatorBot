@@ -1,4 +1,4 @@
-using PomogatorBot.Web.Constants;
+using PomogatorBot.Web.Common.Constants;
 using System.Collections.Concurrent;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;

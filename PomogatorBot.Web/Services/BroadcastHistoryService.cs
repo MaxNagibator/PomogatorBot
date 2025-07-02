@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PomogatorBot.Web.Infrastructure;
 using PomogatorBot.Web.Infrastructure.Entities;
-using Telegram.Bot.Types;
 
 namespace PomogatorBot.Web.Services;
 

@@ -1,10 +1,8 @@
 ﻿using PomogatorBot.Web.CallbackQueries.Common;
-using PomogatorBot.Web.Commands.Common;
-using PomogatorBot.Web.Features.Keyboard;
+using PomogatorBot.Web.Common.Keyboard;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace PomogatorBot.Web.Services;

@@ -1,5 +1,4 @@
-using PomogatorBot.Web.Constants;
-using Telegram.Bot.Types;
+using PomogatorBot.Web.Common.Constants;
 
 namespace PomogatorBot.Web.Common;
 

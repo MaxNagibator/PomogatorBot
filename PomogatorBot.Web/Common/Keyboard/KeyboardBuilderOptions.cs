@@ -1,4 +1,4 @@
-namespace PomogatorBot.Web.Features.Keyboard;
+namespace PomogatorBot.Web.Common.Keyboard;
 
 /// <summary>
 /// Параметры конфигурации для валидации и ограничений KeyboardBuilder

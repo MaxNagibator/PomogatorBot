@@ -1,6 +1,6 @@
 ﻿using PomogatorBot.Web.Commands;
 
-namespace PomogatorBot.Web.Constants;
+namespace PomogatorBot.Web.Common.Constants;
 
 public static class Messages
 {

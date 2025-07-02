@@ -1,6 +1,6 @@
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace PomogatorBot.Web.Features.Keyboard;
+namespace PomogatorBot.Web.Common.Keyboard;
 
 /// <summary>
 /// Строитель для создания клавиатур в режиме сетки с поддержкой fluent API

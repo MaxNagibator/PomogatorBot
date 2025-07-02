@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
 using PomogatorBot.Web.Commands.Common;
 using PomogatorBot.Web.Common;
-using PomogatorBot.Web.Configuration;
+using PomogatorBot.Web.Common.Configuration;
 using Telegram.Bot.Types;
 
 namespace PomogatorBot.Tests.Commands.Common;

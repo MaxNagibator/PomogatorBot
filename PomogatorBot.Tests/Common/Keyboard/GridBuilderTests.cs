@@ -1,6 +1,6 @@
-using PomogatorBot.Web.Features.Keyboard;
+using PomogatorBot.Web.Common.Keyboard;
 
-namespace PomogatorBot.Tests.Features.Keyboard;
+namespace PomogatorBot.Tests.Common.Keyboard;
 
 [TestFixture]
 public class GridBuilderTests

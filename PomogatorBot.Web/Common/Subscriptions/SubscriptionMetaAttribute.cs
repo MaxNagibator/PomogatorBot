@@ -1,4 +1,4 @@
-﻿namespace PomogatorBot.Web.Common;
+﻿namespace PomogatorBot.Web.Common.Subscriptions;
 
 [AttributeUsage(AttributeTargets.Field)]
 public sealed class SubscriptionMetaAttribute(string displayName, string color, string icon) : Attribute
