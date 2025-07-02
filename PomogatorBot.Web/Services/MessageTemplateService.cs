@@ -5,7 +5,7 @@ namespace PomogatorBot.Web.Services;
 
 public class MessageTemplateService
 {
-    public string ReplaceUserVariables(string message, User user)
+    public string ReplaceUserVariables(string message, PomogatorUser user)
     {
         return message
             .Replace(TemplateVariables.User.FirstName, user.FirstName, StringComparison.OrdinalIgnoreCase)

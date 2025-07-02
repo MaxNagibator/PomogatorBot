@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using PomogatorBot.Web.Infrastructure;
+using PomogatorBot.Web.Infrastructure.Entities;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
-using User = PomogatorBot.Web.Infrastructure.Entities.User;
 
 namespace PomogatorBot.Web.Services;
 
@@ -19,12 +19,12 @@ public class UserService(
         IsDisabled = true,
     };
 
-    public ValueTask<User?> GetAsync(long id, CancellationToken cancellationToken = default)
+    public ValueTask<PomogatorUser?> GetAsync(long id, CancellationToken cancellationToken = default)
     {
         return context.Users.FindAsync([id], cancellationToken);
     }
 
-    public async Task SaveAsync(User entity, CancellationToken cancellationToken = default)
+    public async Task SaveAsync(PomogatorUser entity, CancellationToken cancellationToken = default)
     {
         var user = await GetAsync(entity.UserId, cancellationToken);
 
@@ -59,7 +59,7 @@ public class UserService(
         return context.Users.AnyAsync(x => x.UserId == id, cancellationToken);
     }
 
-    public Task<List<User>> GetAllUsersAsync(CancellationToken cancellationToken = default)
+    public Task<List<PomogatorUser>> GetAllUsersAsync(CancellationToken cancellationToken = default)
     {
         return context.Users
             .OrderByDescending(x => x.CreatedAt)
@@ -164,7 +164,7 @@ public class UserService(
                 logger.LogError(exception, "Ошибка API при отправке сообщения пользователю {UserId}: {ErrorCode}", user.UserId, exception.ErrorCode);
 
                 failedSends++;
-                errorMessages.Add($"API Error {exception.ErrorCode} для пользователя {user.UserId} ({user.Username})");
+                errorMessages.Add($"Ошибка API {exception.ErrorCode} для пользователя {user.UserId} ({user.Username})");
             }
             catch (Exception exception)
             {

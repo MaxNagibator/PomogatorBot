@@ -1,8 +1,8 @@
 ﻿using PomogatorBot.Web.CallbackQueries.Common;
 using PomogatorBot.Web.Constants;
+using PomogatorBot.Web.Infrastructure.Entities;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
-using DatabaseUser = PomogatorBot.Web.Infrastructure.Entities.User;
 
 namespace PomogatorBot.Web.CallbackQueries;
 
@@ -23,17 +23,17 @@ public class ToggleSubscriptionHandler(
         return CallbackDataParser.TryParseWithPrefix(callbackData, TogglePrefix, out _);
     }
 
-    protected override async Task<BotResponse> HandleUserCallbackAsync(CallbackQuery callbackQuery, DatabaseUser user, CancellationToken cancellationToken)
+    protected override async Task<BotResponse> HandleUserCallbackAsync(CallbackQuery callbackQuery, PomogatorUser user, CancellationToken cancellationToken)
     {
         if (CallbackDataParser.TryParseWithPrefix(callbackQuery.Data!, TogglePrefix, out var subscriptionName) == false)
         {
-            logger.LogWarning("Invalid callback data format: {CallbackData}", callbackQuery.Data);
+            logger.LogWarning("Неверный формат данных колбэка: {CallbackData}", callbackQuery.Data);
             return new($"{Emoji.Error} Неверный формат данных");
         }
 
         if (Enum.TryParse<Subscribes>(subscriptionName, out var subscription) == false)
         {
-            logger.LogWarning("Unknown subscription: {Subscription}", subscriptionName);
+            logger.LogWarning("Неизвестный тип подписки: {Subscription}", subscriptionName);
             return new($"{Emoji.Question} Неизвестный тип подписки");
         }
 

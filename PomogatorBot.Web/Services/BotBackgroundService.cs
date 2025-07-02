@@ -35,7 +35,7 @@ public class BotBackgroundService(
         }
 
         var me = await botClient.GetMe(stoppingToken);
-        logger.LogInformation("Bot @{Username} started", me.Username);
+        logger.LogInformation("Бот @{Username} запущен", me.Username);
 
         botClient.StartReceiving(HandleUpdateAsync, HandlePollingErrorAsync, _receiverOptions, stoppingToken);
     }
@@ -74,13 +74,18 @@ public class BotBackgroundService(
 
         var userId = message.From.Id;
         var text = message.Text;
+        var commandDescription = PerformanceLogger.GetCommandDescription(text);
 
-        logger.LogInformation("Полученное сообщение от {UserId}: {Text}", userId, text);
+        logger.LogInformation("Получено сообщение от пользователя {UserId}: {Text}", userId, text);
 
         await using var scope = serviceProvider.CreateAsyncScope();
-
         var handler = scope.ServiceProvider.GetRequiredService<CommandRouter>().GetHandlerWithDefault(message.Text);
-        var response = await handler.HandleAsync(message, cancellationToken);
+
+        var response = await PerformanceLogger.LogExecutionTimeAsync(logger,
+            "команда",
+            commandDescription,
+            userId,
+            () => handler.HandleAsync(message, cancellationToken));
 
         if (string.IsNullOrWhiteSpace(response.Message) == false)
         {
@@ -95,12 +100,21 @@ public class BotBackgroundService(
             return;
         }
 
+        var userId = callbackQuery.From.Id;
+        var callbackDescription = PerformanceLogger.GetCallbackDescription(callbackQuery.Data);
+
+        logger.LogInformation("Получен колбэк от пользователя {UserId}: {CallbackData}", userId, callbackQuery.Data);
+
         await using var scope = serviceProvider.CreateAsyncScope();
         var handler = scope.ServiceProvider.GetRequiredService<CallbackQueryRouter>().GetHandler(callbackQuery.Data);
 
         if (handler != null)
         {
-            var response = await handler.HandleCallbackAsync(callbackQuery, cancellationToken);
+            var response = await PerformanceLogger.LogExecutionTimeAsync(logger,
+                "колбэк",
+                callbackDescription,
+                userId,
+                () => handler.HandleCallbackAsync(callbackQuery, cancellationToken));
 
             if (string.IsNullOrEmpty(response.Message))
             {
@@ -121,7 +135,13 @@ public class BotBackgroundService(
 
             if (commandHandler != null)
             {
-                var response = await commandHandler.HandleAsync(new() { From = callbackQuery.From }, cancellationToken);
+                var commandDescription = PerformanceLogger.GetCommandDescription('/' + callbackQuery.Data);
+
+                var response = await PerformanceLogger.LogExecutionTimeAsync(logger,
+                    "команда через колбэк",
+                    commandDescription,
+                    userId,
+                    () => commandHandler.HandleAsync(new() { From = callbackQuery.From }, cancellationToken));
 
                 if (string.IsNullOrWhiteSpace(response.Message) == false)
                 {
@@ -134,7 +154,8 @@ public class BotBackgroundService(
             }
             else
             {
-                logger.LogWarning("No handler found for callback: {CallbackData}", callbackQuery.Data);
+                logger.LogWarning("Обработчик для колбэка не найден: {CallbackData} от пользователя {UserId}",
+                    callbackQuery.Data, userId);
             }
         }
 
@@ -196,11 +217,11 @@ public class BotBackgroundService(
         switch (exception)
         {
             case ApiRequestException api:
-                logger.LogError(api, "Telegram API Error: [{ErrorCode}] {Message}", api.ErrorCode, api.Message);
+                logger.LogError(api, "Ошибка Telegram API: [{ErrorCode}] {Message}", api.ErrorCode, api.Message);
                 break;
 
             default:
-                logger.LogError(exception, "Internal Error: ");
+                logger.LogError(exception, "Внутренняя ошибка: {Message}", exception.Message);
                 break;
         }
 

@@ -1,7 +1,7 @@
 using PomogatorBot.Web.Constants;
+using PomogatorBot.Web.Infrastructure.Entities;
 using PomogatorBot.Web.Services;
 using Telegram.Bot.Types;
-using DatabaseUser = PomogatorBot.Web.Infrastructure.Entities.User;
 
 namespace PomogatorBot.Web.CallbackQueries.Common;
 
@@ -24,5 +24,5 @@ public abstract class UserRequiredCallbackQueryHandler(UserService userService) 
         return await HandleUserCallbackAsync(callbackQuery, user, cancellationToken);
     }
 
-    protected abstract Task<BotResponse> HandleUserCallbackAsync(CallbackQuery callbackQuery, DatabaseUser user, CancellationToken cancellationToken);
+    protected abstract Task<BotResponse> HandleUserCallbackAsync(CallbackQuery callbackQuery, PomogatorUser user, CancellationToken cancellationToken);
 }

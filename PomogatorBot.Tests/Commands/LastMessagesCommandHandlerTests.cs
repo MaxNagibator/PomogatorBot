@@ -126,7 +126,7 @@ public class LastMessagesCommandHandlerTests
     public void FormatBroadcastsResponseWithEntitiesWithTruncationShouldHandleCorrectly()
     {
         // Arrange
-        var longMessage = new string('A', 150) + " конец сообщения";
+        var longMessage = new string('A', 250) + " конец сообщения";
 
         var broadcasts = new List<BroadcastHistory>
         {
@@ -139,7 +139,7 @@ public class LastMessagesCommandHandlerTests
                     new() { Type = MessageEntityType.Bold, Offset = 0, Length = 10 },
                     new() { Type = MessageEntityType.Italic, Offset = 50, Length = 20 },
                     new() { Type = MessageEntityType.Code, Offset = 95, Length = 10 },
-                    new() { Type = MessageEntityType.Underline, Offset = 160, Length = 5 },
+                    new() { Type = MessageEntityType.Underline, Offset = 260, Length = 5 },
                 ],
                 StartedAt = DateTime.UtcNow,
                 Status = BroadcastStatus.Completed,

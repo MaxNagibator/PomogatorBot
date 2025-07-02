@@ -33,7 +33,7 @@ public class MessageTemplateServiceTests
     public void ReplaceUserVariablesWithValidUserDataShouldReplaceCorrectly(string message, string firstName, string username, string alias, string expected)
     {
         // Arrange
-        var user = new User
+        var user = new PomogatorUser
         {
             FirstName = firstName,
             Username = username,
@@ -62,7 +62,7 @@ public class MessageTemplateServiceTests
         // Arrange
         var message = $"Добро пожаловать, {TemplateVariables.User.Alias}!";
 
-        var user = new User
+        var user = new PomogatorUser
         {
             FirstName = "Иван",
             Username = "ivan",
@@ -91,7 +91,7 @@ public class MessageTemplateServiceTests
     public void ReplaceUserVariablesWithDifferentCasingShouldBeCaseInsensitive(string message, string expected)
     {
         // Arrange
-        var user = new User
+        var user = new PomogatorUser
         {
             FirstName = "Иван",
             Username = "ivan",
@@ -140,7 +140,7 @@ public class MessageTemplateServiceTests
     public void ReplaceUserVariablesWithMessagesWithoutKnownVariablesShouldReturnUnchanged(string message)
     {
         // Arrange
-        var user = new User
+        var user = new PomogatorUser
         {
             FirstName = "Иван",
             Username = "ivan",
@@ -236,7 +236,7 @@ public class MessageTemplateServiceTests
     public class UserVariableTestData
     {
         public required string Message { get; init; }
-        public required User User { get; init; }
+        public required PomogatorUser User { get; init; }
         public required string Expected { get; init; }
     }
 }

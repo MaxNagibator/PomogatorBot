@@ -124,10 +124,10 @@ try
 
                 if (retryCount >= maxRetries)
                 {
-                    throw new InvalidOperationException($"migration fail after {retryCount} attempts", exception);
+                    throw new InvalidOperationException($"Миграция базы данных не удалась после {retryCount} попыток", exception);
                 }
 
-                Log.Warning(exception, "Migration attempt {RetryCount} failed, retrying in {Delay}s", retryCount, delay.TotalSeconds);
+                Log.Warning(exception, "Попытка миграции {RetryCount} не удалась, повторная попытка через {Delay} сек", retryCount, delay.TotalSeconds);
                 await Task.Delay(delay);
                 delay *= 2;
             }
