@@ -7,7 +7,7 @@ namespace PomogatorBot.Web.CallbackQueries;
 
 public class BroadcastConfirmationHandler(
     BroadcastPendingService broadcastPendingService,
-    UserService userService,
+    BroadcastExecutionService broadcastExecutionService,
     ILogger<BroadcastConfirmationHandler> logger) : ICallbackQueryHandler
 {
     public const string ConfirmPrefix = "broadcast_confirm_";
@@ -31,7 +31,7 @@ public class BroadcastConfirmationHandler(
 
         if (CallbackDataParser.TryParseWithMultiplePrefixes(callbackData, PrefixActions, out var action, out var pendingId) == false)
         {
-            logger.LogWarning("Unknown broadcast callback action: {CallbackData}", callbackData);
+            logger.LogWarning("Неизвестное действие callback рассылки: {CallbackData}", callbackData);
             return new($"{Emoji.Question} Неизвестное действие");
         }
 
@@ -44,59 +44,53 @@ public class BroadcastConfirmationHandler(
 
         if (pendingBroadcast.AdminUserId != userId)
         {
-            logger.LogWarning("User {UserId} tried to access broadcast created by {AdminUserId}", userId, pendingBroadcast.AdminUserId);
+            logger.LogWarning("Пользователь {UserId} попытался получить доступ к рассылке, созданной пользователем {AdminUserId}", userId, pendingBroadcast.AdminUserId);
             return new($"{Emoji.Error} У вас нет прав для выполнения этого действия.");
         }
 
         return action switch
         {
-            "confirm" => await HandleConfirmBroadcast(pendingBroadcast, cancellationToken),
+            "confirm" => HandleConfirmBroadcast(pendingBroadcast, callbackQuery),
             "cancel" => HandleCancelBroadcast(pendingBroadcast),
             _ => new($"{Emoji.Question} Неизвестное действие"),
         };
     }
 
-    private async Task<BotResponse> HandleConfirmBroadcast(PendingBroadcast pendingBroadcast, CancellationToken cancellationToken)
+    private BotResponse HandleConfirmBroadcast(PendingBroadcast pendingBroadcast, CallbackQuery callbackQuery)
     {
-        try
+        if (callbackQuery.Message == null)
         {
-            logger.LogInformation("Executing broadcast {BroadcastId} for admin {AdminUserId}",
-                pendingBroadcast.Id, pendingBroadcast.AdminUserId);
-
-            var response = await userService.NotifyAsync(pendingBroadcast.Message,
-                pendingBroadcast.Subscribes,
-                pendingBroadcast.Entities,
-                pendingBroadcast.AdminUserId,
-                cancellationToken);
-
-            broadcastPendingService.RemovePendingBroadcast(pendingBroadcast.Id);
-
-            var successMessage = $"""
-                                  {Emoji.Success} Рассылка успешно выполнена!
-
-                                  {Emoji.Chart} Статистика:
-                                  {Emoji.Users} Всего пользователей: {response.TotalUsers}
-                                  {Emoji.Success} Успешно отправлено: {response.SuccessfulSends}
-                                  {Emoji.Error} С ошибкой: {response.FailedSends}
-                                  """;
-
-            logger.LogInformation("Broadcast {BroadcastId} completed successfully. Success: {Success}, Failed: {Failed}, Total: {Total}",
-                pendingBroadcast.Id, response.SuccessfulSends, response.FailedSends, response.TotalUsers);
-
-            return new(successMessage);
+            logger.LogWarning("CallbackQuery.Message равно null для рассылки {BroadcastId}", pendingBroadcast.Id);
+            return new($"{Emoji.Error} Ошибка обработки запроса. Попробуйте еще раз.");
         }
-        catch (Exception exception)
+
+        var chatId = callbackQuery.Message.Chat.Id;
+        var messageId = callbackQuery.Message.MessageId;
+
+        logger.LogInformation("Постановка рассылки {BroadcastId} в очередь для администратора {AdminUserId} в чате {ChatId}",
+            pendingBroadcast.Id, pendingBroadcast.AdminUserId, chatId);
+
+        var broadcastTask = new BroadcastTask
         {
-            logger.LogError(exception, "Error executing broadcast {BroadcastId}", pendingBroadcast.Id);
-            return new($"{Emoji.Error} Произошла ошибка при выполнении рассылки. Попробуйте еще раз.");
-        }
+            BroadcastId = pendingBroadcast.Id,
+            Message = pendingBroadcast.Message,
+            Subscribes = pendingBroadcast.Subscribes,
+            Entities = pendingBroadcast.Entities,
+            AdminUserId = pendingBroadcast.AdminUserId,
+            ChatId = chatId,
+            MessageId = messageId,
+        };
+
+        _ = broadcastExecutionService.EnqueueBroadcastAsync(broadcastTask, CancellationToken.None);
+
+        return new($"{Emoji.Refresh} Рассылка поставлена в очередь на выполнение...");
     }
 
     private BotResponse HandleCancelBroadcast(PendingBroadcast pendingBroadcast)
     {
         broadcastPendingService.RemovePendingBroadcast(pendingBroadcast.Id);
 
-        logger.LogInformation("Broadcast {BroadcastId} cancelled by admin {AdminUserId}",
+        logger.LogInformation("Рассылка {BroadcastId} отменена администратором {AdminUserId}",
             pendingBroadcast.Id, pendingBroadcast.AdminUserId);
 
         return new($"{Emoji.Error} Рассылка отменена.");

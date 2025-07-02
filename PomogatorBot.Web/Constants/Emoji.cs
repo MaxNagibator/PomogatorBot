@@ -196,4 +196,9 @@ public static class Emoji
     /// 💬
     /// </summary>
     public const string Message = "💬";
+
+    /// <summary>
+    /// 📤
+    /// </summary>
+    public const string Send = "📤";
 }

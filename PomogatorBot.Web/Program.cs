@@ -55,6 +55,9 @@ try
 
     builder.Services.AddHostedService<BotBackgroundService>();
 
+    builder.Services.AddSingleton<BroadcastExecutionService>();
+    builder.Services.AddHostedService(provider => provider.GetRequiredService<BroadcastExecutionService>());
+
     builder.Services.AddBotCommandHandlers(typeof(Program).Assembly)
         .AddScoped<CommandRouter>();
 
@@ -66,7 +69,8 @@ try
         .AddScoped<MessagePreviewService>()
         .AddScoped<MessageTemplateService>()
         .AddScoped<BroadcastHistoryService>()
-        .AddSingleton<BroadcastPendingService>();
+        .AddSingleton<BroadcastPendingService>()
+        .AddSingleton<BroadcastProgressService>();
 
     builder.Services.AddProblemDetails(options =>
     {
@@ -114,16 +118,16 @@ try
                 Log.Information("Промигрировано");
                 break;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
                 retryCount++;
 
                 if (retryCount >= maxRetries)
                 {
-                    throw new InvalidOperationException($"migration fail after {retryCount} attempts", ex);
+                    throw new InvalidOperationException($"migration fail after {retryCount} attempts", exception);
                 }
 
-                Log.Warning(ex, "Migration attempt {RetryCount} failed, retrying in {Delay}s", retryCount, delay.TotalSeconds);
+                Log.Warning(exception, "Migration attempt {RetryCount} failed, retrying in {Delay}s", retryCount, delay.TotalSeconds);
                 await Task.Delay(delay);
                 delay *= 2;
             }

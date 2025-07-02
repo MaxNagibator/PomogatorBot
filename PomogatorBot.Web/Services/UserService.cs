@@ -87,12 +87,34 @@ public class UserService(
             .CountAsync(cancellationToken);
     }
 
-    public async Task<NotifyResponse> NotifyAsync(
+    public Task<NotifyResponse> NotifyAsync(
         string message,
         Subscribes subscribes,
         MessageEntity[]? entities = null,
         long? adminId = null,
         CancellationToken cancellationToken = default)
+    {
+        return NotifyInternalAsync(message, subscribes, entities, adminId, null, cancellationToken);
+    }
+
+    public Task<NotifyResponse> NotifyWithProgressAsync(
+        string message,
+        Subscribes subscribes,
+        MessageEntity[]? entities = null,
+        long? adminId = null,
+        Func<int, int, Task>? progressCallback = null,
+        CancellationToken cancellationToken = default)
+    {
+        return NotifyInternalAsync(message, subscribes, entities, adminId, progressCallback, cancellationToken);
+    }
+
+    private async Task<NotifyResponse> NotifyInternalAsync(
+        string message,
+        Subscribes subscribes,
+        MessageEntity[]? entities,
+        long? adminId,
+        Func<int, int, Task>? progressCallback,
+        CancellationToken cancellationToken)
     {
         var queryable = context.Users
             .Where(x => (x.Subscriptions & subscribes) == subscribes);
@@ -127,7 +149,7 @@ public class UserService(
                     cancellationToken: cancellationToken);
 
                 successfulSends++;
-            }
+            } // TODO: Шляпа
             catch (ApiRequestException exception) when (exception.ErrorCode == 403)
             {
                 logger.LogInformation(exception, "Пользователь {UserId} заблокировал бота (ErrorCode: 403). Удаляем учетную запись", user.UserId);
@@ -139,22 +161,40 @@ public class UserService(
             }
             catch (ApiRequestException exception)
             {
-                logger.LogError(exception, "API error sending message to user {UserId}: {ErrorCode}", user.UserId, exception.ErrorCode);
+                logger.LogError(exception, "Ошибка API при отправке сообщения пользователю {UserId}: {ErrorCode}", user.UserId, exception.ErrorCode);
 
                 failedSends++;
                 errorMessages.Add($"API Error {exception.ErrorCode} для пользователя {user.UserId} ({user.Username})");
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "Unknown error sending message to user {UserId}", user.UserId);
+                logger.LogError(exception, "Неизвестная ошибка при отправке сообщения пользователю {UserId}", user.UserId);
 
                 failedSends++;
                 errorMessages.Add($"Неизвестная ошибка для пользователя {user.UserId} ({user.Username}): {exception.Message}");
             }
 
-            if ((successfulSends + failedSends) % 10 == 0)
+            var progressUpdateInterval = progressCallback != null ? 5 : 10;
+
+            if ((successfulSends + failedSends) % progressUpdateInterval != 0 && successfulSends + failedSends != totalUsers)
             {
-                await broadcastHistoryService.UpdateProgressAsync(broadcast.Id, successfulSends, failedSends, cancellationToken);
+                continue;
+            }
+
+            await broadcastHistoryService.UpdateProgressAsync(broadcast.Id, successfulSends, failedSends, cancellationToken);
+
+            if (progressCallback == null)
+            {
+                continue;
+            }
+
+            try
+            {
+                await progressCallback(successfulSends, failedSends);
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "Ошибка в callback прогресса во время рассылки {BroadcastId}", broadcast.Id);
             }
         }
 
