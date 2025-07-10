@@ -13,6 +13,11 @@ public class BotBackgroundService(
     ILogger<BotBackgroundService> logger)
     : BackgroundService
 {
+    private static readonly LinkPreviewOptions LinkPreviewOptions = new()
+    {
+        IsDisabled = true,
+    };
+
     private readonly ReceiverOptions _receiverOptions = new()
     {
         AllowedUpdates =
@@ -190,6 +195,7 @@ public class BotBackgroundService(
                 await bot.EditMessageText(chatId,
                     messageId.Value,
                     response.Message,
+                    linkPreviewOptions: LinkPreviewOptions,
                     replyMarkup: keyboard,
                     entities: response.Entities,
                     cancellationToken: cancellationToken);
@@ -204,6 +210,7 @@ public class BotBackgroundService(
         {
             await bot.SendMessage(chatId,
                 response.Message,
+                linkPreviewOptions: LinkPreviewOptions,
                 replyMarkup: keyboard,
                 entities: response.Entities,
                 cancellationToken: cancellationToken);

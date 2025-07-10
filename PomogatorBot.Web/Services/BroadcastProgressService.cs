@@ -7,6 +7,11 @@ namespace PomogatorBot.Web.Services;
 
 public sealed class BroadcastProgressService : IDisposable
 {
+    private static readonly LinkPreviewOptions LinkPreviewOptions = new()
+    {
+        IsDisabled = true,
+    };
+
     private readonly ITelegramBotClient _botClient;
     private readonly ILogger<BroadcastProgressService> _logger;
     private readonly ConcurrentDictionary<string, BroadcastProgressInfo> _activeProgresses = new();
@@ -119,6 +124,7 @@ public sealed class BroadcastProgressService : IDisposable
             return _botClient.EditMessageText(progressInfo.ChatId,
                 progressInfo.MessageId,
                 message,
+                linkPreviewOptions: LinkPreviewOptions,
                 cancellationToken: cancellationToken);
         }
         catch (ApiRequestException exception) when (exception.Message.Contains("message is not modified", StringComparison.OrdinalIgnoreCase))

@@ -28,7 +28,7 @@ public sealed class BroadcastPendingService : IDisposable
             Entities = entities,
             AdminUserId = adminUserId,
             CreatedAt = DateTime.UtcNow,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(10),
+            ExpiresAt = DateTime.UtcNow.AddHours(1),
         };
 
         _pendingBroadcasts[pendingId] = pendingBroadcast;
