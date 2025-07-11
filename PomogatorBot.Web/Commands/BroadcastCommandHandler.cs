@@ -80,7 +80,13 @@ public class BroadcastCommandHandler(
         var adjustedEntities = AdjustEntitiesForConfirmationMessage(preview.PreviewEntities, previewHeader.Length + Environment.NewLine.Length);
         var keyboard = keyboardFactory.CreateForBroadcastConfirmation(pendingId);
 
-        return new(confirmationMessage, keyboard, adjustedEntities);
+        return new(confirmationMessage, keyboard, adjustedEntities, OnMessageSent);
+
+        void OnMessageSent(long chatId, int messageId)
+        {
+            broadcastPendingService.AddNotificationForBroadcast(pendingId, chatId, messageId,
+                confirmationMessage, adjustedEntities, keyboard);
+        }
     }
 
     private static string GetHelpMessage()

@@ -56,6 +56,9 @@ try
     builder.Services.AddSingleton<BroadcastExecutionService>();
     builder.Services.AddHostedService(provider => provider.GetRequiredService<BroadcastExecutionService>());
 
+    builder.Services.AddSingleton<BroadcastNotificationService>();
+    builder.Services.AddHostedService(provider => provider.GetRequiredService<BroadcastNotificationService>());
+
     builder.Services.AddBotCommandHandlers(typeof(Program).Assembly)
         .AddScoped<CommandRouter>();
 

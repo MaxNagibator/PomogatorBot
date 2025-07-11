@@ -201,4 +201,9 @@ public static class Emoji
     /// 📤
     /// </summary>
     public const string Send = "📤";
+
+    /// <summary>
+    /// 🔔
+    /// </summary>
+    public const string Bell = "🔔";
 }

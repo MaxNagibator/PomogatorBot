@@ -1,15 +1,22 @@
 using System.Collections.Concurrent;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace PomogatorBot.Web.Services;
 
 public sealed class BroadcastPendingService : IDisposable
 {
     private readonly ConcurrentDictionary<string, PendingBroadcast> _pendingBroadcasts = new();
-    private readonly Timer _cleanupTimer;
+    private readonly PeriodicTimer _cleanupTimer;
+    private readonly ILogger<BroadcastPendingService> _logger;
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private readonly BroadcastNotificationService _notificationService;
 
-    public BroadcastPendingService()
+    public BroadcastPendingService(BroadcastNotificationService notificationService, ILogger<BroadcastPendingService> logger)
     {
-        _cleanupTimer = new(CleanupExpiredBroadcasts, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+        _notificationService = notificationService;
+        _logger = logger;
+        _cleanupTimer = new(TimeSpan.FromDays(0.5));
+        _ = StartCleanupLoopAsync();
     }
 
     public string StorePendingBroadcast(
@@ -35,42 +42,95 @@ public sealed class BroadcastPendingService : IDisposable
         return pendingId;
     }
 
+    public void AddNotificationForBroadcast(
+        string pendingId,
+        long chatId,
+        int messageId,
+        string originalConfirmationMessage,
+        MessageEntity[]? originalConfirmationEntities,
+        InlineKeyboardMarkup? originalConfirmationKeyboard)
+    {
+        if (_pendingBroadcasts.TryGetValue(pendingId, out var broadcast) == false)
+        {
+            return;
+        }
+
+        _notificationService.AddNotification(pendingId, broadcast.AdminUserId, chatId, messageId, broadcast.CreatedAt, broadcast.ExpiresAt,
+            originalConfirmationMessage, originalConfirmationEntities, originalConfirmationKeyboard);
+    }
+
     public PendingBroadcast? GetPendingBroadcast(string pendingId)
     {
         _pendingBroadcasts.TryGetValue(pendingId, out var pendingBroadcast);
 
-        if (pendingBroadcast != null && pendingBroadcast.ExpiresAt < DateTime.UtcNow)
+        if (pendingBroadcast == null || pendingBroadcast.ExpiresAt >= DateTime.UtcNow)
         {
-            _pendingBroadcasts.TryRemove(pendingId, out _);
-            return null;
+            return pendingBroadcast;
         }
 
-        return pendingBroadcast;
+        _pendingBroadcasts.TryRemove(pendingId, out _);
+        return null;
     }
 
     public bool RemovePendingBroadcast(string pendingId)
     {
-        return _pendingBroadcasts.TryRemove(pendingId, out _);
+        var removed = _pendingBroadcasts.TryRemove(pendingId, out _);
+
+        if (removed)
+        {
+            _notificationService.RemoveNotification(pendingId);
+        }
+
+        return removed;
     }
 
     public void Dispose()
     {
-        _cleanupTimer?.Dispose();
+        _cancellationTokenSource.Cancel();
+        _cleanupTimer.Dispose();
+        _cancellationTokenSource.Dispose();
         GC.SuppressFinalize(this);
     }
 
-    private void CleanupExpiredBroadcasts(object? state)
+    private async Task StartCleanupLoopAsync()
+    {
+        try
+        {
+            while (await _cleanupTimer.WaitForNextTickAsync(_cancellationTokenSource.Token))
+            {
+                await CleanupExpiredBroadcastsAsync();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Ошибка в цикле очистки истекших рассылок");
+        }
+    }
+
+    private async Task CleanupExpiredBroadcastsAsync()
     {
         var now = DateTime.UtcNow;
 
-        var expiredKeys = _pendingBroadcasts
-            .Where(kvp => kvp.Value.ExpiresAt < now)
-            .Select(kvp => kvp.Key)
+        var expiredBroadcasts = _pendingBroadcasts
+            .Where(x => x.Value.ExpiresAt < now)
             .ToList();
 
-        foreach (var key in expiredKeys)
+        foreach (var (key, broadcast) in expiredBroadcasts)
         {
-            _pendingBroadcasts.TryRemove(key, out _);
+            if (_pendingBroadcasts.TryRemove(key, out _) == false)
+            {
+                continue;
+            }
+
+            _logger.LogInformation("Удалена истекшая рассылка {BroadcastId}", key);
+
+            if (_notificationService != null)
+            {
+                await _notificationService.NotifyBroadcastExpiredAsync(key, broadcast.AdminUserId);
+            }
         }
     }
 }

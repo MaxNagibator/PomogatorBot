@@ -208,12 +208,14 @@ public class BotBackgroundService(
         }
         else
         {
-            await bot.SendMessage(chatId,
+            var sentMessage = await bot.SendMessage(chatId,
                 response.Message,
                 linkPreviewOptions: LinkPreviewOptions,
                 replyMarkup: keyboard,
                 entities: response.Entities,
                 cancellationToken: cancellationToken);
+
+            response.OnMessageSent?.Invoke(chatId, sentMessage.MessageId);
         }
     }
 
