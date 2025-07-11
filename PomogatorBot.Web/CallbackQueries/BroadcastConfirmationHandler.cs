@@ -6,6 +6,7 @@ namespace PomogatorBot.Web.CallbackQueries;
 public class BroadcastConfirmationHandler(
     BroadcastPendingService broadcastPendingService,
     BroadcastExecutionService broadcastExecutionService,
+    BroadcastNotificationService notificationService,
     ILogger<BroadcastConfirmationHandler> logger) : ICallbackQueryHandler
 {
     public const string ConfirmPrefix = "broadcast_confirm_";
@@ -33,7 +34,7 @@ public class BroadcastConfirmationHandler(
             return new($"{Emoji.Question} Неизвестное действие");
         }
 
-        var pendingBroadcast = broadcastPendingService.GetPendingBroadcast(pendingId);
+        var pendingBroadcast = broadcastPendingService.Get(pendingId);
 
         if (pendingBroadcast == null)
         {
@@ -56,6 +57,8 @@ public class BroadcastConfirmationHandler(
 
     private BotResponse HandleConfirmBroadcast(PendingBroadcast pendingBroadcast, CallbackQuery callbackQuery)
     {
+        notificationService.Remove(pendingBroadcast.Id);
+
         if (callbackQuery.Message == null)
         {
             logger.LogWarning("CallbackQuery.Message равно null для рассылки {BroadcastId}", pendingBroadcast.Id);
@@ -79,14 +82,15 @@ public class BroadcastConfirmationHandler(
             MessageId = messageId,
         };
 
-        _ = broadcastExecutionService.EnqueueBroadcastAsync(broadcastTask, CancellationToken.None);
+        _ = broadcastExecutionService.EnqueueAsync(broadcastTask, CancellationToken.None);
 
         return new($"{Emoji.Refresh} Рассылка поставлена в очередь на выполнение...");
     }
 
     private BotResponse HandleCancelBroadcast(PendingBroadcast pendingBroadcast)
     {
-        broadcastPendingService.RemovePendingBroadcast(pendingBroadcast.Id);
+        notificationService.Remove(pendingBroadcast.Id);
+        broadcastPendingService.Remove(pendingBroadcast.Id);
 
         logger.LogInformation("Рассылка {BroadcastId} отменена администратором {AdminUserId}",
             pendingBroadcast.Id, pendingBroadcast.AdminUserId);

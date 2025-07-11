@@ -24,7 +24,7 @@ public sealed class BroadcastProgressService : IDisposable
         _cleanupTimer = new(CleanupExpiredProgresses, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
     }
 
-    public void StartBroadcastProgress(string broadcastId, long chatId, int messageId, int totalUsers)
+    public void StartProgress(string broadcastId, long chatId, int messageId, int totalUsers)
     {
         var progressInfo = new BroadcastProgressInfo
         {
@@ -70,7 +70,7 @@ public sealed class BroadcastProgressService : IDisposable
         await UpdateMessageSafelyAsync(progressInfo, message, cancellationToken);
     }
 
-    public async Task CompleteBroadcastAsync(string broadcastId, int successfulSends, int failedSends, int totalUsers, CancellationToken cancellationToken = default)
+    public async Task CompleteAsync(string broadcastId, int successfulSends, int failedSends, int totalUsers, CancellationToken cancellationToken = default)
     {
         if (_activeProgresses.TryGetValue(broadcastId, out var progressInfo) == false)
         {

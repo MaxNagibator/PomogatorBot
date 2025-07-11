@@ -25,7 +25,7 @@ public sealed class BroadcastNotificationService(
         GC.SuppressFinalize(this);
     }
 
-    public void AddNotification(
+    public void Add(
         string broadcastId,
         long adminUserId,
         long chatId,
@@ -51,17 +51,14 @@ public sealed class BroadcastNotificationService(
         };
 
         _notifications[broadcastId] = notification;
+        logger.LogInformation("Добавлено уведомление для рассылки {BroadcastId} администратору {AdminUserId}", broadcastId, adminUserId);
 
-        logger.LogInformation("Добавлено уведомление для рассылки {BroadcastId} администратору {AdminUserId}",
-            broadcastId, adminUserId);
-
-        // TODO: Подумать
         _ = Task.Run(async () =>
         {
             try
             {
                 await Task.Delay(TimeSpan.FromSeconds(30));
-                await ProcessSingleNotification(notification, DateTime.UtcNow);
+                await ProcessAsync();
             }
             catch (Exception exception)
             {
@@ -70,7 +67,7 @@ public sealed class BroadcastNotificationService(
         });
     }
 
-    public void RemoveNotification(string broadcastId)
+    public void Remove(string broadcastId)
     {
         if (_notifications.TryRemove(broadcastId, out var notification) == false)
         {
@@ -83,11 +80,15 @@ public sealed class BroadcastNotificationService(
 
     public async Task NotifyBroadcastExpiredAsync(string broadcastId, long adminUserId)
     {
+        const string Message = $"""
+                                {Emoji.Error} Рассылка удалена
+
+                                {Emoji.Clock} Неподтвержденная рассылка была автоматически удалена
+                                """;
+
         try
         {
-            var message = FormatExpiredNotificationMessage();
-
-            await botClient.SendMessage(adminUserId, message,
+            await botClient.SendMessage(adminUserId, Message,
                 linkPreviewOptions: LinkPreviewOptions,
                 cancellationToken: CancellationToken.None);
 
@@ -106,10 +107,10 @@ public sealed class BroadcastNotificationService(
 
         try
         {
-            while (await _notificationTimer.WaitForNextTickAsync(stoppingToken))
+            do
             {
-                await ProcessNotificationsAsync();
-            }
+                await ProcessAsync();
+            } while (await _notificationTimer.WaitForNextTickAsync(stoppingToken));
         }
         catch (OperationCanceledException exception)
         {
@@ -117,40 +118,7 @@ public sealed class BroadcastNotificationService(
         }
     }
 
-    private static string FormatReminderMessage(TimeSpan waitingTime, TimeSpan timeUntilExpiry)
-    {
-        var waitingMinutes = (int)waitingTime.TotalMinutes;
-        var expiryMinutes = (int)timeUntilExpiry.TotalMinutes;
-
-        return $"""
-                {Emoji.Bell} Напоминание о рассылке
-
-                {Emoji.Clock} Рассылка ожидает подтверждения уже {waitingMinutes} мин
-                {Emoji.Warning} Автоматическое удаление через {expiryMinutes} мин
-                """;
-    }
-
-    private static string FormatPreWarningMessage(TimeSpan timeUntilExpiry)
-    {
-        var expiryMinutes = (int)timeUntilExpiry.TotalMinutes;
-
-        return $"""
-                {Emoji.Alert} Предупреждение об удалении
-
-                {Emoji.Clock} Рассылка будет удалена через {expiryMinutes} мин!
-                """;
-    }
-
-    private static string FormatExpiredNotificationMessage()
-    {
-        return $"""
-                {Emoji.Error} Рассылка удалена
-
-                {Emoji.Clock} Неподтвержденная рассылка была автоматически удалена
-                """;
-    }
-
-    private async Task ProcessNotificationsAsync()
+    private async Task ProcessAsync()
     {
         var now = DateTime.UtcNow;
 
@@ -162,7 +130,7 @@ public sealed class BroadcastNotificationService(
         {
             try
             {
-                await ProcessSingleNotification(notification, now);
+                await ProcessSingle(notification, now);
             }
             catch (Exception exception)
             {
@@ -170,8 +138,13 @@ public sealed class BroadcastNotificationService(
             }
         }
 
+        RemoveExpired();
+    }
+
+    private void RemoveExpired()
+    {
         var expiredNotifications = _notifications
-            .Where(x => x.Value.IsConfirmed || x.Value.ExpiresAt < now)
+            .Where(x => x.Value.IsConfirmed || x.Value.ExpiresAt < DateTime.UtcNow)
             .Select(x => x.Key)
             .ToList();
 
@@ -181,9 +154,9 @@ public sealed class BroadcastNotificationService(
         }
     }
 
-    private async Task ProcessSingleNotification(BroadcastNotificationInfo notification, DateTime now)
+    private async Task ProcessSingle(BroadcastNotificationInfo notification, DateTime now)
     {
-        if (now >= notification.ExpiresAt)
+        if (notification.IsConfirmed || now >= notification.ExpiresAt)
         {
             return;
         }
@@ -192,42 +165,55 @@ public sealed class BroadcastNotificationService(
 
         if (notification.PreWarningNotificationSent == false && timeUntilExpiry <= TimeSpan.FromMinutes(5))
         {
-            await SendPreWarningNotification(notification, timeUntilExpiry);
+            await SendPreWarning(notification, timeUntilExpiry);
             notification.PreWarningNotificationSent = true;
             return;
         }
 
         if (timeUntilExpiry > TimeSpan.FromMinutes(5))
         {
-            await SendReminderNotification(notification, now, timeUntilExpiry);
-
+            await SendReminder(notification, now, timeUntilExpiry);
             notification.NextReminderAt = now.Add(notification.ReminderInterval);
             notification.ReminderInterval = TimeSpan.FromMinutes(Math.Min(notification.ReminderInterval.TotalMinutes * 2, 32));
         }
     }
 
-    private async Task SendReminderNotification(BroadcastNotificationInfo notification, DateTime now, TimeSpan timeUntilExpiry)
+    private async Task SendReminder(BroadcastNotificationInfo notification, DateTime now, TimeSpan timeUntilExpiry)
     {
         var waitingTime = now - notification.CreatedAt;
-        var message = FormatReminderMessage(waitingTime, timeUntilExpiry);
+        var waitingMinutes = (int)waitingTime.TotalMinutes;
+        var expiryMinutes = (int)timeUntilExpiry.TotalMinutes;
 
-        await UpdateNotificationMessage(notification, message);
+        var message = $"""
+                       {Emoji.Bell} Напоминание о рассылке
+
+                       {Emoji.Clock} Рассылка ожидает подтверждения уже {waitingMinutes} мин
+                       {Emoji.Warning} Автоматическое удаление через {expiryMinutes} мин
+                       """;
+
+        await UpdateMessage(notification, message);
 
         logger.LogInformation("Отправлено напоминание о рассылке {BroadcastId} (ожидает {WaitingMinutes} мин)",
             notification.BroadcastId, (int)waitingTime.TotalMinutes);
     }
 
-    private async Task SendPreWarningNotification(BroadcastNotificationInfo notification, TimeSpan timeUntilExpiry)
+    private async Task SendPreWarning(BroadcastNotificationInfo notification, TimeSpan timeUntilExpiry)
     {
-        var message = FormatPreWarningMessage(timeUntilExpiry);
+        var expiryMinutes = (int)timeUntilExpiry.TotalMinutes;
 
-        await UpdateNotificationMessage(notification, message);
+        var message = $"""
+                       {Emoji.Alert} Предупреждение об удалении
+
+                       {Emoji.Clock} Рассылка будет удалена через {expiryMinutes} мин!
+                       """;
+
+        await UpdateMessage(notification, message);
 
         logger.LogInformation("Отправлено предупреждение об удалении рассылки {BroadcastId} через {Minutes} мин",
             notification.BroadcastId, (int)timeUntilExpiry.TotalMinutes);
     }
 
-    private async Task UpdateNotificationMessage(BroadcastNotificationInfo notification, string notificationText)
+    private async Task UpdateMessage(BroadcastNotificationInfo notification, string notificationText)
     {
         var separator = "\n\n━━━━━\n";
         var modifiedMessage = $"{notificationText}{separator}{notification.OriginalConfirmationMessage}";
@@ -239,6 +225,11 @@ public sealed class BroadcastNotificationService(
         {
             try
             {
+                if (notification.IsConfirmed)
+                {
+                    return;
+                }
+
                 await botClient.DeleteMessage(notification.ChatId, notification.MessageId);
             }
             catch (ApiRequestException exception) when (exception.Message.Contains("message to delete not found", StringComparison.OrdinalIgnoreCase))
@@ -248,7 +239,7 @@ public sealed class BroadcastNotificationService(
 
         try
         {
-            await SendNewNotificationMessage(notification, modifiedMessage, adjustedEntities);
+            await SendNewMessage(notification, modifiedMessage, adjustedEntities);
         }
         catch (Exception exception)
         {
@@ -257,8 +248,13 @@ public sealed class BroadcastNotificationService(
         }
     }
 
-    private async Task SendNewNotificationMessage(BroadcastNotificationInfo notification, string message, MessageEntity[]? entities)
+    private async Task SendNewMessage(BroadcastNotificationInfo notification, string message, MessageEntity[]? entities)
     {
+        if (notification.IsConfirmed)
+        {
+            return;
+        }
+
         var sentMessage = await botClient.SendMessage(notification.ChatId,
             message,
             entities: entities,

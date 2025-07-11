@@ -38,7 +38,7 @@ public class BroadcastExecutionService : BackgroundService
         _logger.LogInformation("Сервис выполнения рассылок корректно остановлен");
     }
 
-    public async Task<bool> EnqueueBroadcastAsync(BroadcastTask broadcastTask, CancellationToken cancellationToken = default)
+    public async Task<bool> EnqueueAsync(BroadcastTask broadcastTask, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -63,20 +63,20 @@ public class BroadcastExecutionService : BackgroundService
 
             try
             {
-                await ProcessBroadcastTaskAsync(broadcastTask, stoppingToken);
+                await ProcessTaskAsync(broadcastTask, stoppingToken);
             }
             catch (Exception exception)
             {
                 _logger.LogError(exception, "Ошибка при обработке задачи рассылки {BroadcastId}", broadcastTask.BroadcastId);
 
-                await UpdateBroadcastFailureAsync(broadcastTask, exception.Message);
+                await UpdateFailureAsync(broadcastTask, exception.Message);
             }
         }
 
         _logger.LogInformation("Сервис выполнения рассылок остановлен");
     }
 
-    private async Task ProcessBroadcastTaskAsync(BroadcastTask broadcastTask, CancellationToken cancellationToken)
+    private async Task ProcessTaskAsync(BroadcastTask broadcastTask, CancellationToken cancellationToken)
     {
         using var scope = _serviceProvider.CreateScope();
         var userService = scope.ServiceProvider.GetRequiredService<UserService>();
@@ -88,9 +88,9 @@ public class BroadcastExecutionService : BackgroundService
 
         try
         {
-            var userCount = await userService.GetUserCountBySubscriptionAsync(broadcastTask.Subscribes, cancellationToken);
+            var userCount = await userService.GetCountBySubscriptionAsync(broadcastTask.Subscribes, cancellationToken);
 
-            broadcastProgressService.StartBroadcastProgress(broadcastTask.BroadcastId,
+            broadcastProgressService.StartProgress(broadcastTask.BroadcastId,
                 broadcastTask.ChatId,
                 broadcastTask.MessageId,
                 userCount);
@@ -104,9 +104,9 @@ public class BroadcastExecutionService : BackgroundService
                 ProgressCallback,
                 cancellationToken);
 
-            broadcastPendingService.RemovePendingBroadcast(broadcastTask.BroadcastId);
+            broadcastPendingService.Remove(broadcastTask.BroadcastId);
 
-            await broadcastProgressService.CompleteBroadcastAsync(broadcastTask.BroadcastId,
+            await broadcastProgressService.CompleteAsync(broadcastTask.BroadcastId,
                 response.SuccessfulSends,
                 response.FailedSends,
                 response.TotalUsers,
@@ -119,9 +119,8 @@ public class BroadcastExecutionService : BackgroundService
         {
             _logger.LogError(exception, "Ошибка при выполнении рассылки {BroadcastId}", broadcastTask.BroadcastId);
 
-            await UpdateBroadcastFailureAsync(broadcastTask, exception.Message);
-
-            broadcastPendingService.RemovePendingBroadcast(broadcastTask.BroadcastId);
+            await UpdateFailureAsync(broadcastTask, exception.Message);
+            broadcastPendingService.Remove(broadcastTask.BroadcastId);
 
             throw;
         }
@@ -137,7 +136,7 @@ public class BroadcastExecutionService : BackgroundService
         }
     }
 
-    private async Task UpdateBroadcastFailureAsync(BroadcastTask broadcastTask, string errorMessage)
+    private async Task UpdateFailureAsync(BroadcastTask broadcastTask, string errorMessage)
     {
         try
         {

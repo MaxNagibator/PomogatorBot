@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace PomogatorBot.Web.Services;
 
@@ -19,13 +18,14 @@ public sealed class BroadcastPendingService : IDisposable
         _ = StartCleanupLoopAsync();
     }
 
-    public string StorePendingBroadcast(
+    public string Store(
         string message,
         Subscribes subscribes,
         MessageEntity[]? entities,
         long adminUserId)
     {
         var pendingId = Guid.NewGuid().ToString("N")[..8];
+        var now = DateTime.UtcNow;
 
         var pendingBroadcast = new PendingBroadcast
         {
@@ -34,32 +34,15 @@ public sealed class BroadcastPendingService : IDisposable
             Subscribes = subscribes,
             Entities = entities,
             AdminUserId = adminUserId,
-            CreatedAt = DateTime.UtcNow,
-            ExpiresAt = DateTime.UtcNow.AddHours(1),
+            CreatedAt = now,
+            ExpiresAt = now.AddHours(1),
         };
 
         _pendingBroadcasts[pendingId] = pendingBroadcast;
         return pendingId;
     }
 
-    public void AddNotificationForBroadcast(
-        string pendingId,
-        long chatId,
-        int messageId,
-        string originalConfirmationMessage,
-        MessageEntity[]? originalConfirmationEntities,
-        InlineKeyboardMarkup? originalConfirmationKeyboard)
-    {
-        if (_pendingBroadcasts.TryGetValue(pendingId, out var broadcast) == false)
-        {
-            return;
-        }
-
-        _notificationService.AddNotification(pendingId, broadcast.AdminUserId, chatId, messageId, broadcast.CreatedAt, broadcast.ExpiresAt,
-            originalConfirmationMessage, originalConfirmationEntities, originalConfirmationKeyboard);
-    }
-
-    public PendingBroadcast? GetPendingBroadcast(string pendingId)
+    public PendingBroadcast? Get(string pendingId)
     {
         _pendingBroadcasts.TryGetValue(pendingId, out var pendingBroadcast);
 
@@ -72,16 +55,9 @@ public sealed class BroadcastPendingService : IDisposable
         return null;
     }
 
-    public bool RemovePendingBroadcast(string pendingId)
+    public void Remove(string pendingId)
     {
-        var removed = _pendingBroadcasts.TryRemove(pendingId, out _);
-
-        if (removed)
-        {
-            _notificationService.RemoveNotification(pendingId);
-        }
-
-        return removed;
+        _pendingBroadcasts.TryRemove(pendingId, out _);
     }
 
     public void Dispose()
@@ -98,7 +74,7 @@ public sealed class BroadcastPendingService : IDisposable
         {
             while (await _cleanupTimer.WaitForNextTickAsync(_cancellationTokenSource.Token))
             {
-                await CleanupExpiredBroadcastsAsync();
+                await CleanupExpiredAsync();
             }
         }
         catch (OperationCanceledException)
@@ -110,7 +86,7 @@ public sealed class BroadcastPendingService : IDisposable
         }
     }
 
-    private async Task CleanupExpiredBroadcastsAsync()
+    private async Task CleanupExpiredAsync()
     {
         var now = DateTime.UtcNow;
 

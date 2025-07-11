@@ -11,6 +11,7 @@ public class BroadcastCommandHandler(
     UserService userService,
     KeyboardFactory keyboardFactory,
     BroadcastPendingService broadcastPendingService,
+    BroadcastNotificationService notificationService,
     MessagePreviewService messagePreviewService)
     : AdminRequiredCommandHandler(adminOptions), ICommandMetadata
 {
@@ -56,8 +57,8 @@ public class BroadcastCommandHandler(
 
         var entities = MessageEntityHelper.OffsetEntities(filteredEntities, -entitiesOffset);
 
-        var userCount = await userService.GetUserCountBySubscriptionAsync(subscribes, cancellationToken);
-        var pendingId = broadcastPendingService.StorePendingBroadcast(broadcastMessage, subscribes, entities, message.From!.Id);
+        var userCount = await userService.GetCountBySubscriptionAsync(subscribes, cancellationToken);
+        var pendingId = broadcastPendingService.Store(broadcastMessage, subscribes, entities, message.From!.Id);
         var subscriptionInfo = GetSubscriptionDisplayInfo(subscribes);
         var preview = messagePreviewService.CreatePreview(broadcastMessage, entities);
 
@@ -84,8 +85,22 @@ public class BroadcastCommandHandler(
 
         void OnMessageSent(long chatId, int messageId)
         {
-            broadcastPendingService.AddNotificationForBroadcast(pendingId, chatId, messageId,
-                confirmationMessage, adjustedEntities, keyboard);
+            var broadcast = broadcastPendingService.Get(pendingId);
+
+            if (broadcast == null)
+            {
+                return;
+            }
+
+            notificationService.Add(pendingId,
+                broadcast.AdminUserId,
+                chatId,
+                messageId,
+                broadcast.CreatedAt,
+                broadcast.ExpiresAt,
+                confirmationMessage,
+                adjustedEntities,
+                keyboard);
         }
     }
 

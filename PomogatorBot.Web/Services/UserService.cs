@@ -79,7 +79,7 @@ public class UserService(
         return true;
     }
 
-    public async Task<int> GetUserCountBySubscriptionAsync(Subscribes subscribes, CancellationToken cancellationToken = default)
+    public async Task<int> GetCountBySubscriptionAsync(Subscribes subscribes, CancellationToken cancellationToken = default)
     {
         return await context.Users
             .Where(x => (x.Subscriptions & subscribes) == subscribes)
