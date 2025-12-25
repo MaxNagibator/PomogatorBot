@@ -62,6 +62,7 @@ public class BroadcastCommandHandler(
             subscribes,
             entities,
             () => keyboardFactory.CreateForBroadcastConfirmation(string.Empty),
+            message.From!.Id,
             cancellationToken);
 
         var pendingId = broadcastPendingService.Store(broadcastMessage, subscribes, entities, message.From!.Id);

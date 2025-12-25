@@ -27,6 +27,7 @@ public static class BroadcastWorkflow
                         subscribes,
                         entities,
                         () => keyboardFactory.CreateForBroadcastConfirmation(string.Empty),
+                        adminUserId,
                         cancellationToken);
 
                     var pendingId = broadcastPendingService.Store(message, subscribes, entities, adminUserId);

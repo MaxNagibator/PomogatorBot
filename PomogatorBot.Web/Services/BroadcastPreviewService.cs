@@ -12,9 +12,10 @@ public sealed class BroadcastPreviewService(
         Subscribes subscribes,
         MessageEntity[]? entities,
         Func<InlineKeyboardMarkup> keyboardFactory,
-        CancellationToken cancellationToken)
+        long? adminId = null,
+        CancellationToken cancellationToken = default)
     {
-        var userCount = await userService.GetCountBySubscriptionAsync(subscribes, cancellationToken);
+        var userCount = await userService.GetCountBySubscriptionAsync(subscribes, adminId, cancellationToken);
         var subscriptionInfo = GetSubscriptionDisplayInfo(subscribes);
         var preview = messagePreviewService.CreatePreview(message, entities);
 
@@ -22,7 +23,7 @@ public sealed class BroadcastPreviewService(
                              {Emoji.Megaphone} Подтверждение рассылки:
 
                              {Emoji.Target} Подписки: {subscriptionInfo}
-                             {Emoji.Users} Получателей (админ учитывается): {userCount}
+                             {Emoji.Users} Получателей: {userCount}
 
                              {Emoji.List} Предварительный просмотр (как увидят пользователи):
                              ━━━━━

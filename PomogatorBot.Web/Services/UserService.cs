@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PomogatorBot.Web.Infrastructure;
 using PomogatorBot.Web.Infrastructure.Entities;
 using Telegram.Bot;
@@ -79,11 +79,17 @@ public class UserService(
         return true;
     }
 
-    public async Task<int> GetCountBySubscriptionAsync(Subscribes subscribes, CancellationToken cancellationToken = default)
+    public Task<int> GetCountBySubscriptionAsync(Subscribes subscribes, long? excludeUserId = null, CancellationToken cancellationToken = default)
     {
-        return await context.Users
-            .Where(x => (x.Subscriptions & subscribes) == subscribes)
-            .CountAsync(cancellationToken);
+        var queryable = context.Users
+            .Where(x => (x.Subscriptions & subscribes) == subscribes);
+
+        if (excludeUserId.HasValue)
+        {
+            queryable = queryable.Where(x => x.UserId != excludeUserId.Value);
+        }
+
+        return queryable.CountAsync(cancellationToken);
     }
 
     public Task<NotifyResponse> NotifyAsync(

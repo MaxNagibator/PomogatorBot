@@ -1,4 +1,4 @@
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
 
 namespace PomogatorBot.Web.Services;
 
@@ -88,7 +88,7 @@ public class BroadcastExecutionService : BackgroundService
 
         try
         {
-            var userCount = await userService.GetCountBySubscriptionAsync(broadcastTask.Subscribes, cancellationToken);
+            var userCount = await userService.GetCountBySubscriptionAsync(broadcastTask.Subscribes, broadcastTask.AdminUserId, cancellationToken);
 
             broadcastProgressService.StartProgress(broadcastTask.BroadcastId,
                 broadcastTask.ChatId,
